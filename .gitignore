@@ -7,6 +7,9 @@
 .buildlog/
 .history
 
+# Gallery images
+**/gallery/**/*.{png,jpg,jpeg,gif,webp,svg}
+
 
 
 # Flutter repo-specific
