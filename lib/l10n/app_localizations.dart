@@ -1,0 +1,207 @@
+import 'package:flutter/material.dart';
+
+class AppLocalizations {
+  AppLocalizations(this.locale);
+
+  final Locale locale;
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const Map<String, Map<String, String>> _localizedValues = {
+    'en': {
+      'app_name': 'CheapCheap',
+      'home': 'Home',
+      'categories': 'Categories',
+      'profile': 'Profile',
+      'gallery': 'Gallery',
+      'settings': 'Settings',
+      'add_expense': 'Add expense',
+      'add_category': 'Add category',
+      'edit_category': 'Edit category',
+      'clone_category': 'Clone category',
+      'date': 'Date',
+      'category': 'Category',
+      'name': 'Name',
+      'amount': 'Amount',
+      'income': 'Income',
+      'expense': 'Expense',
+      'note': 'Note',
+      'icon': 'Icon',
+      'reset': 'Reset',
+      'save': 'Save',
+      'cancel': 'Cancel',
+      'import_csv': 'Import CSV',
+      'export_csv': 'Export CSV',
+      'recurrence': 'Recurrence',
+      'recurrence_none': 'None',
+      'recurrence_daily': 'Daily',
+      'recurrence_monthly': 'Monthly',
+      'recurrence_yearly': 'Yearly',
+      'reminder': 'Reminder',
+      'days_before': 'Days before',
+      'message': 'Message',
+      'default_type': 'Default type',
+      'stat_focus': 'Stat focus',
+      'theme': 'Theme',
+      'language': 'Language',
+      'currency': 'Currency',
+      'reward_images': 'Reward images per quest',
+      'quests': 'Quests',
+      'level': 'Level',
+      'exp': 'EXP',
+      'open_categories': 'Open categories',
+      'add_profile_picture': 'Add profile picture',
+      'gallery_locked': 'Locked',
+      'no_expenses': 'No expenses for this month.',
+      'default': 'Default',
+      'custom': 'Custom',
+      'stats': 'Stats',
+      'available': 'Available',
+      'done': 'Done',
+      'day_of_month': 'Day of month',
+      'month': 'Month',
+      'day': 'Day',
+      'pick_icon': 'Pick an icon',
+      'search_icons': 'Search icons',
+      'close': 'Close',
+      'no_category': 'No category',
+      'csv_exported': 'CSV exported to',
+      'csv_imported': 'Imported expenses',
+      'stat_strength': 'Strength',
+      'stat_belly': 'Belly',
+      'stat_spirit': 'Spirit',
+      'stat_adulthood': 'Adulthood',
+      'stat_easygoing': 'Easygoing',
+      'reminders': 'Reminders',
+      'add_reminder': 'Add reminder',
+      'reminder_frequency': 'Frequency',
+      'reminder_daily': 'Daily',
+      'reminder_weekly': 'Weekly',
+      'reminder_time': 'Time',
+      'reminder_message': 'Message',
+      'delete': 'Delete',
+      'next': 'Next',
+      'ok': 'OK',
+      'quest_completed': 'Quest completed',
+      'welcome_intro':
+          'Welcome to CheapCheap! Track your expenses and earn quests to level up. Each expense affects your stats, and quests grant EXP to unlock gallery rewards.',
+      'welcome_profile':
+          'Add your name to start progressing with quests. Quests will not advance until your profile has a name.',
+      'next_quests_in': 'Next quests in',
+      'gallery_empty': 'No gallery images found.',
+      'refresh': 'Refresh',
+    },
+    'it': {
+      'app_name': 'CheapCheap',
+      'home': 'Home',
+      'categories': 'Categorie',
+      'profile': 'Profilo',
+      'gallery': 'Galleria',
+      'settings': 'Impostazioni',
+      'add_expense': 'Aggiungi spesa',
+      'add_category': 'Aggiungi categoria',
+      'edit_category': 'Modifica categoria',
+      'clone_category': 'Clona categoria',
+      'date': 'Data',
+      'category': 'Categoria',
+      'name': 'Nome',
+      'amount': 'Importo',
+      'income': 'Entrata',
+      'expense': 'Spesa',
+      'note': 'Nota',
+      'icon': 'Icona',
+      'reset': 'Reset',
+      'save': 'Salva',
+      'cancel': 'Annulla',
+      'import_csv': 'Importa CSV',
+      'export_csv': 'Esporta CSV',
+      'recurrence': 'Ricorrenza',
+      'recurrence_none': 'Nessuna',
+      'recurrence_daily': 'Giornaliera',
+      'recurrence_monthly': 'Mensile',
+      'recurrence_yearly': 'Annuale',
+      'reminder': 'Promemoria',
+      'days_before': 'Giorni prima',
+      'message': 'Messaggio',
+      'default_type': 'Tipo predefinito',
+      'stat_focus': 'Stat principale',
+      'theme': 'Tema',
+      'language': 'Lingua',
+      'currency': 'Valuta',
+      'reward_images': 'Immagini premio per quest',
+      'quests': 'Quest',
+      'level': 'Livello',
+      'exp': 'ESP',
+      'open_categories': 'Apri categorie',
+      'add_profile_picture': 'Aggiungi immagine profilo',
+      'gallery_locked': 'Bloccata',
+      'no_expenses': 'Nessuna spesa per questo mese.',
+      'default': 'Predefinita',
+      'custom': 'Personalizzata',
+      'stats': 'Statistiche',
+      'available': 'Disponibile',
+      'done': 'Completata',
+      'day_of_month': 'Giorno del mese',
+      'month': 'Mese',
+      'day': 'Giorno',
+      'pick_icon': 'Scegli un icona',
+      'search_icons': 'Cerca icone',
+      'close': 'Chiudi',
+      'no_category': 'Nessuna categoria',
+      'csv_exported': 'CSV esportato in',
+      'csv_imported': 'Spese importate',
+      'stat_strength': 'Forza',
+      'stat_belly': 'Pancia',
+      'stat_spirit': 'Spirito',
+      'stat_adulthood': 'Maturita',
+      'stat_easygoing': 'Serenita',
+      'reminders': 'Promemoria',
+      'add_reminder': 'Aggiungi promemoria',
+      'reminder_frequency': 'Frequenza',
+      'reminder_daily': 'Giornaliero',
+      'reminder_weekly': 'Settimanale',
+      'reminder_time': 'Orario',
+      'reminder_message': 'Messaggio',
+      'delete': 'Elimina',
+      'next': 'Avanti',
+      'ok': 'OK',
+      'quest_completed': 'Quest completata',
+      'welcome_intro':
+          'Benvenuto in CheapCheap! Traccia le spese e completa le quest per salire di livello. Ogni spesa influisce sulle statistiche e le quest danno ESP per sbloccare la galleria.',
+      'welcome_profile':
+          'Aggiungi il tuo nome per iniziare a progredire con le quest. Le quest non avanzano finche il profilo non ha un nome.',
+      'next_quests_in': 'Prossime quest tra',
+      'gallery_empty': 'Nessuna immagine in galleria.',
+      'refresh': 'Aggiorna',
+    },
+  };
+
+  String text(String key) {
+    return _localizedValues[locale.languageCode]?[key] ??
+        _localizedValues['en']![key] ??
+        key;
+  }
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) {
+    return ['en', 'it'].contains(locale.languageCode);
+  }
+
+  @override
+  Future<AppLocalizations> load(Locale locale) async {
+    return AppLocalizations(locale);
+  }
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}

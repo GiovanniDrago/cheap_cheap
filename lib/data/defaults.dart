@@ -1,0 +1,148 @@
+import 'package:cheapcheap/models/category.dart';
+import 'package:cheapcheap/models/quest.dart';
+import 'package:cheapcheap/models/stat_key.dart';
+
+final List<Category> defaultCategories = [
+  Category(
+    id: 'cat_house_bill',
+    name: 'House bill',
+    iconId: 'home_bill',
+    isIncomeDefault: false,
+    statKey: StatKey.adulthood,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_trips',
+    name: 'Trips',
+    iconId: 'trips',
+    isIncomeDefault: false,
+    statKey: StatKey.spirit,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_car',
+    name: 'Car',
+    iconId: 'car',
+    isIncomeDefault: false,
+    statKey: StatKey.adulthood,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_transport',
+    name: 'Transport',
+    iconId: 'transport',
+    isIncomeDefault: false,
+    statKey: StatKey.adulthood,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_games',
+    name: 'Games',
+    iconId: 'games',
+    isIncomeDefault: false,
+    statKey: StatKey.easygoing,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_aperitivo',
+    name: 'Aperitivo',
+    iconId: 'aperitivo',
+    isIncomeDefault: false,
+    statKey: StatKey.spirit,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_health',
+    name: 'Health',
+    iconId: 'health',
+    isIncomeDefault: false,
+    statKey: StatKey.strength,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_cloths',
+    name: 'Cloths',
+    iconId: 'cloths',
+    isIncomeDefault: false,
+    statKey: StatKey.spirit,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_groceries',
+    name: 'Groceries',
+    iconId: 'groceries',
+    isIncomeDefault: false,
+    statKey: StatKey.belly,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_electronics',
+    name: 'Electronics',
+    iconId: 'electronics',
+    isIncomeDefault: false,
+    statKey: StatKey.spirit,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_software',
+    name: 'Software',
+    iconId: 'software',
+    isIncomeDefault: false,
+    statKey: StatKey.adulthood,
+    isDefault: true,
+  ),
+  Category(
+    id: 'cat_hobby',
+    name: 'Hobby',
+    iconId: 'hobby',
+    isIncomeDefault: false,
+    statKey: StatKey.easygoing,
+    isDefault: true,
+  ),
+];
+
+final List<Quest> defaultQuests = [
+  Quest(
+    id: 'quest_profile_picture',
+    name: 'Add a profile picture',
+    description: 'Set a profile image in the profile section.',
+    frequency: QuestFrequency.once,
+    expPoints: 10,
+  ),
+  Quest(
+    id: 'quest_add_expense',
+    name: 'Add an expense',
+    description: 'Add a single expense entry.',
+    frequency: QuestFrequency.daily,
+    expPoints: 10,
+  ),
+  Quest(
+    id: 'quest_add_3_expenses',
+    name: 'Add 3 expenses',
+    description: 'Add three expenses in a single day.',
+    frequency: QuestFrequency.daily,
+    expPoints: 10,
+  ),
+  Quest(
+    id: 'quest_create_category',
+    name: 'Create a custom category',
+    description:
+        'Create a new category from the category list or the expense form.',
+    frequency: QuestFrequency.daily,
+    expPoints: 10,
+  ),
+  Quest(
+    id: 'quest_open_category_list',
+    name: 'Open category list',
+    description: 'Open the categories section.',
+    frequency: QuestFrequency.once,
+    expPoints: 10,
+  ),
+  Quest(
+    id: 'quest_add_recurrent',
+    name: 'Add a recurrent expense',
+    description: 'Save an expense with recurrence enabled.',
+    frequency: QuestFrequency.weekly,
+    expPoints: 10,
+  ),
+];

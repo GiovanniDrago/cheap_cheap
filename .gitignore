@@ -8,7 +8,12 @@
 .history
 
 # Gallery images
-**/gallery/**/*.{png,jpg,jpeg,gif,webp,svg}
+**/gallery/**/*.png
+**/gallery/**/*.jpg
+**/gallery/**/*.jpeg
+**/gallery/**/*.gif
+**/gallery/**/*.webp
+**/gallery/**/*.svg
 
 
 
