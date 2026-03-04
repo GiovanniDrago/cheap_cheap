@@ -3,6 +3,7 @@ import 'package:cheapcheap/models/reminder.dart';
 class Settings {
   Settings({
     this.themeIndex = 0,
+    this.themeMode = 'light',
     this.localeCode = 'en',
     this.currency = 'EUR',
     this.rewardImagesPerQuest = 1,
@@ -11,6 +12,7 @@ class Settings {
   }) : reminders = reminders ?? [];
 
   final int themeIndex;
+  final String themeMode;
   final String localeCode;
   final String currency;
   final int rewardImagesPerQuest;
@@ -19,6 +21,7 @@ class Settings {
 
   Settings copyWith({
     int? themeIndex,
+    String? themeMode,
     String? localeCode,
     String? currency,
     int? rewardImagesPerQuest,
@@ -27,6 +30,7 @@ class Settings {
   }) {
     return Settings(
       themeIndex: themeIndex ?? this.themeIndex,
+      themeMode: themeMode ?? this.themeMode,
       localeCode: localeCode ?? this.localeCode,
       currency: currency ?? this.currency,
       rewardImagesPerQuest: rewardImagesPerQuest ?? this.rewardImagesPerQuest,
@@ -38,6 +42,7 @@ class Settings {
   Map<String, dynamic> toJson() {
     return {
       'themeIndex': themeIndex,
+      'themeMode': themeMode,
       'localeCode': localeCode,
       'currency': currency,
       'rewardImagesPerQuest': rewardImagesPerQuest,
@@ -49,6 +54,7 @@ class Settings {
   factory Settings.fromJson(Map<String, dynamic> json) {
     return Settings(
       themeIndex: json['themeIndex'] as int? ?? 0,
+      themeMode: json['themeMode'] as String? ?? 'light',
       localeCode: json['localeCode'] as String? ?? 'en',
       currency: json['currency'] as String? ?? 'EUR',
       rewardImagesPerQuest: json['rewardImagesPerQuest'] as int? ?? 1,

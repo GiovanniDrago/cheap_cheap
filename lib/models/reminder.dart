@@ -7,6 +7,8 @@ class Reminder {
     required this.hour,
     required this.minute,
     required this.message,
+    this.notificationsEnabled = false,
+    this.weekday,
   });
 
   final String id;
@@ -14,6 +16,8 @@ class Reminder {
   final int hour;
   final int minute;
   final String message;
+  final bool notificationsEnabled;
+  final int? weekday;
 
   Reminder copyWith({
     String? id,
@@ -21,6 +25,8 @@ class Reminder {
     int? hour,
     int? minute,
     String? message,
+    bool? notificationsEnabled,
+    int? weekday,
   }) {
     return Reminder(
       id: id ?? this.id,
@@ -28,6 +34,8 @@ class Reminder {
       hour: hour ?? this.hour,
       minute: minute ?? this.minute,
       message: message ?? this.message,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      weekday: weekday ?? this.weekday,
     );
   }
 
@@ -38,6 +46,8 @@ class Reminder {
       'hour': hour,
       'minute': minute,
       'message': message,
+      'notificationsEnabled': notificationsEnabled,
+      'weekday': weekday,
     };
   }
 
@@ -51,6 +61,8 @@ class Reminder {
       hour: json['hour'] as int? ?? 9,
       minute: json['minute'] as int? ?? 0,
       message: json['message'] as String? ?? '',
+      notificationsEnabled: json['notificationsEnabled'] as bool? ?? false,
+      weekday: json['weekday'] as int?,
     );
   }
 }

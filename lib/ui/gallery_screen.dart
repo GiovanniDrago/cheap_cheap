@@ -78,6 +78,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
       ...unlocked,
       ...state.galleryAssets.where((asset) => !unlocked.contains(asset)),
     ];
+    final unlockedAssets = orderedAssets.where(unlocked.contains).toList();
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.text('gallery'))),
@@ -123,8 +124,13 @@ class _GalleryScreenState extends State<GalleryScreen> {
                 ),
               ),
               child: InkWell(
-                onTap: isUnlocked && asset != null
-                    ? () => _openPreview(context, asset)
+                onTap: isUnlocked
+                    ? () {
+                        final index = unlockedAssets.indexOf(asset);
+                        if (index >= 0) {
+                          _openPreview(context, unlockedAssets, index);
+                        }
+                      }
                     : null,
                 borderRadius: BorderRadius.circular(16),
                 child: ClipRRect(
@@ -139,17 +145,27 @@ class _GalleryScreenState extends State<GalleryScreen> {
     );
   }
 
-  Future<void> _openPreview(BuildContext context, String asset) async {
+  Future<void> _openPreview(
+    BuildContext context,
+    List<String> assets,
+    int initialIndex,
+  ) async {
     await showDialog<void>(
       context: context,
       builder: (context) {
         return Dialog(
           insetPadding: const EdgeInsets.all(16),
           backgroundColor: Colors.black,
-          child: InteractiveViewer(
-            minScale: 0.8,
-            maxScale: 4,
-            child: _GalleryAssetImage(path: asset),
+          child: PageView.builder(
+            controller: PageController(initialPage: initialIndex),
+            itemCount: assets.length,
+            itemBuilder: (context, index) {
+              return InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4,
+                child: _GalleryAssetImage(path: assets[index]),
+              );
+            },
           ),
         );
       },

@@ -28,6 +28,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _reminderMessageController =
       TextEditingController();
+  final TextEditingController _splitMessageController = TextEditingController();
   Category? _selectedCategory;
   String _iconId = 'wallet';
   bool _isIncome = false;
@@ -39,6 +40,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   int _recurrenceMonth = DateTime.now().month;
   bool _reminderEnabled = false;
   int _reminderDaysBefore = 1;
+  bool _splitExpanded = false;
+  bool _splitEnabled = false;
+  int _splitPayments = 2;
+  SplitFrequency _splitFrequency = SplitFrequency.monthly;
+  bool _splitReminderEnabled = false;
+  int _splitReminderDaysBefore = 1;
 
   @override
   void initState() {
@@ -62,6 +69,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _amountController.dispose();
     _noteController.dispose();
     _reminderMessageController.dispose();
+    _splitMessageController.dispose();
     super.dispose();
   }
 
@@ -137,6 +145,17 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       _selectedDate = parsedDate;
     }
     final amount = parseAmount(_amountController.text);
+    final splitPlan = _splitEnabled
+        ? SplitPlan(
+            totalPayments: _splitPayments,
+            frequency: _splitFrequency,
+            reminderEnabled: _splitReminderEnabled,
+            reminderDaysBefore: _splitReminderDaysBefore,
+            reminderMessage: _splitMessageController.text.trim().isEmpty
+                ? _defaultSplitMessage(_nameController.text.trim())
+                : _splitMessageController.text.trim(),
+          )
+        : null;
     final expense = Expense(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       date: _selectedDate,
@@ -160,9 +179,16 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               reminderDaysBefore: _reminderDaysBefore,
               reminderMessage: _reminderMessageController.text.trim(),
             ),
+      splitPlan: splitPlan,
     );
     context.read<AppState>().addExpense(expense);
     Navigator.of(context).pop();
+  }
+
+  String _defaultSplitMessage(String name) {
+    final strings = AppLocalizations.of(context);
+    final label = name.isEmpty ? strings.text('expense') : name;
+    return '${strings.text('split_message_default')} $label (1/$_splitPayments)';
   }
 
   @override
@@ -198,7 +224,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<Category?>(
-            value: _selectedCategory,
+            key: ValueKey(_selectedCategory?.id),
+            initialValue: _selectedCategory,
             items: [
               DropdownMenuItem(
                 value: null,
@@ -288,7 +315,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 child: DropdownButtonFormField<RecurrenceType>(
-                  value: _recurrenceType,
+                  key: ValueKey(_recurrenceType),
+                  initialValue: _recurrenceType,
                   items: [
                     DropdownMenuItem(
                       value: RecurrenceType.none,
@@ -319,7 +347,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                   child: DropdownButtonFormField<int>(
-                    value: _recurrenceDay,
+                    key: ValueKey('recurrence-day-$_recurrenceDay'),
+                    initialValue: _recurrenceDay,
                     decoration: InputDecoration(
                       labelText: strings.text('day_of_month'),
                     ),
@@ -344,7 +373,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                     children: [
                       Expanded(
                         child: DropdownButtonFormField<int>(
-                          value: _recurrenceMonth,
+                          key: ValueKey('recurrence-month-$_recurrenceMonth'),
+                          initialValue: _recurrenceMonth,
                           decoration: InputDecoration(
                             labelText: strings.text('month'),
                           ),
@@ -365,7 +395,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: DropdownButtonFormField<int>(
-                          value: _recurrenceDay,
+                          key: ValueKey('recurrence-day-$_recurrenceDay'),
+                          initialValue: _recurrenceDay,
                           decoration: InputDecoration(
                             labelText: strings.text('day'),
                           ),
@@ -397,7 +428,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   child: Column(
                     children: [
                       DropdownButtonFormField<int>(
-                        value: _reminderDaysBefore,
+                        key: ValueKey('reminder-days-$_reminderDaysBefore'),
+                        initialValue: _reminderDaysBefore,
                         decoration: InputDecoration(
                           labelText: strings.text('days_before'),
                         ),
@@ -421,6 +453,112 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                           labelText: strings.text('message'),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ExpansionTile(
+            initiallyExpanded: _splitExpanded,
+            onExpansionChanged: (expanded) {
+              setState(() => _splitExpanded = expanded);
+            },
+            title: Text(strings.text('split')),
+            children: [
+              SwitchListTile(
+                value: _splitEnabled,
+                onChanged: (value) => setState(() => _splitEnabled = value),
+                title: Text(strings.text('split_enabled')),
+              ),
+              if (_splitEnabled)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Column(
+                    children: [
+                      DropdownButtonFormField<int>(
+                        key: ValueKey('split-payments-$_splitPayments'),
+                        initialValue: _splitPayments,
+                        decoration: InputDecoration(
+                          labelText: strings.text('split_payments'),
+                        ),
+                        items: List.generate(24, (index) => index + 2)
+                            .map(
+                              (count) => DropdownMenuItem(
+                                value: count,
+                                child: Text(count.toString()),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _splitPayments = value);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<SplitFrequency>(
+                        key: ValueKey(_splitFrequency),
+                        initialValue: _splitFrequency,
+                        decoration: InputDecoration(
+                          labelText: strings.text('split_frequency'),
+                        ),
+                        items: [
+                          DropdownMenuItem(
+                            value: SplitFrequency.weekly,
+                            child: Text(strings.text('reminder_weekly')),
+                          ),
+                          DropdownMenuItem(
+                            value: SplitFrequency.monthly,
+                            child: Text(strings.text('recurrence_monthly')),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _splitFrequency = value);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        value: _splitReminderEnabled,
+                        onChanged: (value) =>
+                            setState(() => _splitReminderEnabled = value),
+                        title: Text(strings.text('reminder')),
+                      ),
+                      if (_splitReminderEnabled)
+                        Column(
+                          children: [
+                            DropdownButtonFormField<int>(
+                              key: ValueKey(
+                                'split-days-$_splitReminderDaysBefore',
+                              ),
+                              initialValue: _splitReminderDaysBefore,
+                              decoration: InputDecoration(
+                                labelText: strings.text('days_before'),
+                              ),
+                              items: List.generate(14, (index) => index + 1)
+                                  .map(
+                                    (day) => DropdownMenuItem(
+                                      value: day,
+                                      child: Text(day.toString()),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(
+                                  () => _splitReminderDaysBefore = value,
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _splitMessageController,
+                              decoration: InputDecoration(
+                                labelText: strings.text('message'),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

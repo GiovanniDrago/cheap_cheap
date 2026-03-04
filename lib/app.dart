@@ -1,6 +1,8 @@
 import 'package:cheapcheap/l10n/app_localizations.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/ui/current_stats_screen.dart';
 import 'package:cheapcheap/ui/main_shell.dart';
+import 'package:cheapcheap/ui/monthly_stats_screen.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -25,6 +27,7 @@ class CheapCheapApp extends StatelessWidget {
       builder: (context, state, _) {
         final scheme = _themes[state.settings.themeIndex % _themes.length];
         final textTheme = GoogleFonts.spaceGroteskTextTheme();
+        final themeMode = _resolveThemeMode(state.settings.themeMode);
         return MaterialApp(
           title: 'CheapCheap',
           theme: FlexThemeData.light(
@@ -41,7 +44,7 @@ class CheapCheapApp extends StatelessWidget {
             textTheme: textTheme,
             useMaterial3: true,
           ),
-          themeMode: ThemeMode.light,
+          themeMode: themeMode,
           locale: state.locale,
           supportedLocales: const [Locale('en'), Locale('it')],
           localizationsDelegates: const [
@@ -51,9 +54,24 @@ class CheapCheapApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
             MonthYearPickerLocalizations.delegate,
           ],
+          routes: {
+            '/monthly-stats': (_) => const MonthlyStatsScreen(),
+            '/current-stats': (_) => const CurrentStatsScreen(),
+          },
           home: const MainShell(),
         );
       },
     );
+  }
+
+  ThemeMode _resolveThemeMode(String mode) {
+    switch (mode) {
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+        return ThemeMode.system;
+      default:
+        return ThemeMode.light;
+    }
   }
 }

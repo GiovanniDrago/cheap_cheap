@@ -99,12 +99,12 @@ class _MainShellState extends State<MainShell> {
   }
 
   Future<void> _showWelcome(BuildContext context) async {
-    final strings = AppLocalizations.of(context);
     if (!mounted) return;
     final state = context.read<AppState>();
     await showDialog<void>(
       context: context,
       builder: (context) {
+        final strings = AppLocalizations.of(context);
         return AlertDialog(
           title: Text(strings.text('app_name')),
           content: Text(strings.text('welcome_intro')),
@@ -118,12 +118,14 @@ class _MainShellState extends State<MainShell> {
       },
     );
 
-    if (!mounted) return;
+    if (!context.mounted) return;
     setState(() => _index = 2);
 
+    if (!context.mounted) return;
     await showDialog<void>(
       context: context,
       builder: (context) {
+        final strings = AppLocalizations.of(context);
         return AlertDialog(
           title: Text(strings.text('profile')),
           content: Text(strings.text('welcome_profile')),

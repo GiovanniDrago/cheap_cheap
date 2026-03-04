@@ -1,19 +1,14 @@
-import 'dart:io';
-
 import 'package:cheapcheap/data/icon_options.dart';
 import 'package:cheapcheap/l10n/app_localizations.dart';
 import 'package:cheapcheap/models/expense.dart';
-import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/ui/expense_detail_screen.dart';
 import 'package:cheapcheap/ui/expense_form_screen.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:cheapcheap/utils/formatters.dart';
-import 'package:csv/csv.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:month_year_picker/month_year_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,12 +65,182 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openExpenseDetails(Expense expense, {bool openSplit = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ExpenseDetailScreen(
+          expense: expense,
+          initialSplitExpanded: openSplit,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(Expense expense) async {
+    final strings = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.text('confirm_delete')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.text('no')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.text('yes')),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed == true && mounted) {
+      context.read<AppState>().removeExpense(expense.id);
+    }
+  }
+
+  Future<void> _openRefundDialog(Expense expense) async {
+    final strings = AppLocalizations.of(context);
+    var date = expense.refundDate ?? DateTime.now();
+    final noteController = TextEditingController(text: expense.refundNote);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(strings.text('refund')),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: strings.text('refund_date'),
+                          ),
+                          child: Text(DateFormat('yyyy-MM-dd').format(date)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: date,
+                            firstDate: DateTime(2018, 1),
+                            lastDate: DateTime(2100, 12),
+                          );
+                          if (picked != null) {
+                            setState(() => date = picked);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: noteController,
+                    decoration: InputDecoration(
+                      labelText: strings.text('refund_note'),
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.text('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.text('save')),
+            ),
+          ],
+        );
+      },
+    );
+    if (result == true && mounted) {
+      final updated = expense.copyWith(
+        refundDate: date,
+        refundNote: noteController.text.trim(),
+      );
+      context.read<AppState>().updateExpense(updated);
+    }
+  }
+
+  Future<void> _openExpenseMenu(Expense expense) async {
+    final strings = AppLocalizations.of(context);
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.receipt_long),
+                title: Text(strings.text('details')),
+                onTap: () => Navigator.of(context).pop('details'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.call_split),
+                title: Text(strings.text('split')),
+                onTap: () => Navigator.of(context).pop('split'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.undo),
+                title: Text(strings.text('refund')),
+                onTap: () => Navigator.of(context).pop('refund'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline),
+                title: Text(strings.text('delete')),
+                onTap: () => Navigator.of(context).pop('delete'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) return;
+    switch (action) {
+      case 'details':
+        _openExpenseDetails(expense);
+        break;
+      case 'split':
+        _openExpenseDetails(expense, openSplit: true);
+        break;
+      case 'refund':
+        await _openRefundDialog(expense);
+        break;
+      case 'delete':
+        await _confirmDelete(expense);
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final strings = AppLocalizations.of(context);
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
     final monthLabel = DateFormat.yMMMM(locale).format(_currentMonth);
+    final currentExpenses = state.expensesForMonth(_currentMonth);
+    final monthTotal = currentExpenses
+        .where((expense) => !expense.isRefunded)
+        .fold<double>(
+          0,
+          (sum, expense) => sum + expense.amount * (expense.isIncome ? 1 : -1),
+        );
 
     return Scaffold(
       body: SafeArea(
@@ -98,10 +263,33 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Row(
                             children: [
-                              Text(
-                                monthLabel,
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    monthLabel,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    formatCurrency(
+                                      monthTotal,
+                                      state.settings.currency,
+                                      locale,
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          color: monthTotal >= 0
+                                              ? Colors.green[700]
+                                              : Colors.red[700],
+                                        ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(width: 8),
                               const Icon(Icons.keyboard_arrow_down),
@@ -111,15 +299,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    onPressed: () => _importCsv(context),
-                    icon: const Icon(Icons.upload_file),
-                    tooltip: strings.text('import_csv'),
-                  ),
-                  IconButton(
-                    onPressed: () => _exportCsv(context),
-                    icon: const Icon(Icons.download),
-                    tooltip: strings.text('export_csv'),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) {
+                      if (value == 'monthly_stats') {
+                        Navigator.of(context).pushNamed('/monthly-stats');
+                      }
+                      if (value == 'current_stats') {
+                        Navigator.of(context).pushNamed('/current-stats');
+                      }
+                    },
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: 'monthly_stats',
+                        child: Text(strings.text('monthly_stats')),
+                      ),
+                      PopupMenuItem(
+                        value: 'current_stats',
+                        child: Text(strings.text('current_stats')),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -140,6 +339,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     expenses: expenses,
                     currency: state.settings.currency,
                     locale: locale,
+                    onExpenseTap: _openExpenseDetails,
+                    onExpenseLongPress: _openExpenseMenu,
                   );
                 },
               ),
@@ -154,131 +355,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  Future<void> _exportCsv(BuildContext context) async {
-    final state = context.read<AppState>();
-    final messenger = ScaffoldMessenger.of(context);
-    final strings = AppLocalizations.of(context);
-    final csv = _buildCsv(state);
-    final directory = await _getExportDirectory();
-    final file = File('${directory.path}/cheapcheap_export.csv');
-    await file.writeAsString(csv);
-    if (!mounted) return;
-    messenger.showSnackBar(
-      SnackBar(content: Text('${strings.text('csv_exported')} ${file.path}')),
-    );
-  }
-
-  Future<void> _importCsv(BuildContext context) async {
-    final state = context.read<AppState>();
-    final messenger = ScaffoldMessenger.of(context);
-    final strings = AppLocalizations.of(context);
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-    );
-    if (result == null || result.files.single.path == null) {
-      return;
-    }
-    final file = File(result.files.single.path!);
-    final content = await file.readAsString();
-    final imported = _parseCsv(content, state);
-    state.importExpenses(imported);
-    if (!mounted) return;
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('${strings.text('csv_imported')}: ${imported.length}'),
-      ),
-    );
-  }
-
-  String _buildCsv(AppState state) {
-    final rows = <List<String>>[
-      [
-        'id',
-        'date',
-        'name',
-        'amount',
-        'isIncome',
-        'categoryId',
-        'iconId',
-        'note',
-        'recurrenceType',
-        'recurrenceDay',
-        'recurrenceMonth',
-        'reminderEnabled',
-        'reminderDaysBefore',
-        'reminderMessage',
-      ],
-    ];
-    for (final expense in state.expenses) {
-      rows.add([
-        expense.id,
-        expense.date.toIso8601String(),
-        expense.name,
-        expense.amount.toString(),
-        expense.isIncome.toString(),
-        expense.categoryId ?? '',
-        expense.iconId,
-        expense.note,
-        expense.recurrence?.type.name ?? '',
-        expense.recurrence?.dayOfMonth?.toString() ?? '',
-        expense.recurrence?.monthOfYear?.toString() ?? '',
-        expense.recurrence?.reminderEnabled.toString() ?? '',
-        expense.recurrence?.reminderDaysBefore.toString() ?? '',
-        expense.recurrence?.reminderMessage ?? '',
-      ]);
-    }
-    return const ListToCsvConverter().convert(rows);
-  }
-
-  List<Expense> _parseCsv(String content, AppState state) {
-    final rows = const CsvToListConverter().convert(content);
-    final List<Expense> imported = [];
-    for (var i = 1; i < rows.length; i++) {
-      final row = rows[i];
-      if (row.length < 5) continue;
-      final date = DateTime.tryParse(row[1].toString()) ?? DateTime.now();
-      final amount = double.tryParse(row[3].toString()) ?? 0;
-      imported.add(
-        Expense(
-          id: row[0].toString(),
-          date: date,
-          name: row[2].toString(),
-          amount: amount,
-          isIncome: row[4].toString() == 'true',
-          categoryId: row[5].toString().isEmpty ? null : row[5].toString(),
-          iconId: row[6].toString().isEmpty ? 'wallet' : row[6].toString(),
-          note: row[7].toString(),
-          recurrence: _parseRecurrence(row),
-        ),
-      );
-    }
-    return imported;
-  }
-
-  Recurrence? _parseRecurrence(List<dynamic> row) {
-    if (row.length < 9) return null;
-    final typeRaw = row[8].toString();
-    if (typeRaw.isEmpty) return null;
-    final type = RecurrenceType.values.firstWhere(
-      (item) => item.name == typeRaw,
-      orElse: () => RecurrenceType.none,
-    );
-    if (type == RecurrenceType.none) return null;
-    return Recurrence(
-      type: type,
-      dayOfMonth: int.tryParse(row[9].toString()),
-      monthOfYear: int.tryParse(row[10].toString()),
-      reminderEnabled: row[11].toString() == 'true',
-      reminderDaysBefore: int.tryParse(row[12].toString()) ?? 1,
-      reminderMessage: row.length > 13 ? row[13].toString() : '',
-    );
-  }
-
-  Future<Directory> _getExportDirectory() async {
-    return await getApplicationDocumentsDirectory();
-  }
 }
 
 class _ExpenseMonthView extends StatelessWidget {
@@ -287,12 +363,16 @@ class _ExpenseMonthView extends StatelessWidget {
     required this.expenses,
     required this.currency,
     required this.locale,
+    required this.onExpenseTap,
+    required this.onExpenseLongPress,
   });
 
   final DateTime month;
   final List<Expense> expenses;
   final String currency;
   final String locale;
+  final void Function(Expense expense) onExpenseTap;
+  final void Function(Expense expense) onExpenseLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +388,7 @@ class _ExpenseMonthView extends StatelessWidget {
 
     final grouped = <DateTime, List<Expense>>{};
     for (final expense in expenses) {
-      final day = dateOnly(expense.date);
+      final day = dateOnly(expense.refundDate ?? expense.date);
       grouped.putIfAbsent(day, () => []).add(expense);
     }
     final days = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
@@ -324,6 +404,8 @@ class _ExpenseMonthView extends StatelessWidget {
           expenses: dayExpenses,
           currency: currency,
           locale: locale,
+          onExpenseTap: onExpenseTap,
+          onExpenseLongPress: onExpenseLongPress,
         );
       },
     );
@@ -336,12 +418,16 @@ class _ExpenseDaySection extends StatelessWidget {
     required this.expenses,
     required this.currency,
     required this.locale,
+    required this.onExpenseTap,
+    required this.onExpenseLongPress,
   });
 
   final DateTime date;
   final List<Expense> expenses;
   final String currency;
   final String locale;
+  final void Function(Expense expense) onExpenseTap;
+  final void Function(Expense expense) onExpenseLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -366,8 +452,12 @@ class _ExpenseDaySection extends StatelessWidget {
           const SizedBox(height: 8),
           ...expenses.map((expense) {
             final option = iconOptionById(expense.iconId);
+            final isRefunded = expense.isRefunded;
             return Card(
               elevation: 0,
+              color: isRefunded
+                  ? Theme.of(context).colorScheme.surfaceContainerHighest
+                  : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
                 side: BorderSide(
@@ -375,6 +465,8 @@ class _ExpenseDaySection extends StatelessWidget {
                 ),
               ),
               child: ListTile(
+                onTap: () => onExpenseTap(expense),
+                onLongPress: () => onExpenseLongPress(expense),
                 leading: CircleAvatar(
                   backgroundColor: Theme.of(
                     context,
@@ -383,18 +475,30 @@ class _ExpenseDaySection extends StatelessWidget {
                 ),
                 title: Text(expense.name),
                 subtitle: Text(expense.note.isEmpty ? '-' : expense.note),
-                trailing: Text(
-                  formatCurrency(
-                    expense.amount * (expense.isIncome ? 1 : -1),
-                    currency,
-                    locale,
-                  ),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: expense.isIncome
-                        ? Colors.green[700]
-                        : Colors.red[700],
-                  ),
+                trailing: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      formatCurrency(
+                        expense.amount * (expense.isIncome ? 1 : -1),
+                        currency,
+                        locale,
+                      ),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: expense.isIncome
+                            ? Colors.green[700]
+                            : Colors.red[700],
+                      ),
+                    ),
+                    if (expense.splitPlan != null &&
+                        expense.splitPlan!.totalPayments > 1)
+                      Text(
+                        '1/${expense.splitPlan!.totalPayments}',
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                  ],
                 ),
               ),
             );

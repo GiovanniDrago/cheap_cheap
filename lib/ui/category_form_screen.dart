@@ -149,7 +149,8 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<StatKey>(
-            value: _statKey,
+            key: ValueKey(_statKey),
+            initialValue: _statKey,
             decoration: InputDecoration(labelText: strings.text('stat_focus')),
             items: StatKey.values
                 .map(

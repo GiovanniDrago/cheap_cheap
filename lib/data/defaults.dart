@@ -99,6 +99,14 @@ final List<Category> defaultCategories = [
     statKey: StatKey.easygoing,
     isDefault: true,
   ),
+  Category(
+    id: 'cat_payroll',
+    name: 'Payroll',
+    iconId: 'income',
+    isIncomeDefault: true,
+    statKey: StatKey.adulthood,
+    isDefault: true,
+  ),
 ];
 
 final List<Quest> defaultQuests = [

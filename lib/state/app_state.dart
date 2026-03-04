@@ -10,6 +10,7 @@ import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/models/reminder.dart';
 import 'package:cheapcheap/models/settings.dart';
 import 'package:cheapcheap/models/stat_key.dart';
+import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/services/storage_service.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:flutter/material.dart';
@@ -58,7 +59,7 @@ class AppState extends ChangeNotifier {
         : expenseList
               .map((item) => Expense.fromJson(Map<String, dynamic>.from(item)))
               .toList();
-    expenses.sort((a, b) => b.date.compareTo(a.date));
+    expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
 
     final profileJson = _storage.readJson('profile');
     profile = profileJson == null ? Profile() : Profile.fromJson(profileJson);
@@ -67,6 +68,7 @@ class AppState extends ChangeNotifier {
     settings = settingsJson == null
         ? Settings()
         : Settings.fromJson(settingsJson);
+    _syncReminders();
 
     final questJson = _storage.readJson('questProgress');
     if (questJson != null) {
@@ -170,6 +172,12 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateThemeMode(String mode) {
+    settings = settings.copyWith(themeMode: mode);
+    _persist();
+    notifyListeners();
+  }
+
   void updateLocale(String code) {
     settings = settings.copyWith(localeCode: code);
     _persist();
@@ -196,6 +204,7 @@ class AppState extends ChangeNotifier {
 
   void addReminder(Reminder reminder) {
     settings = settings.copyWith(reminders: [...settings.reminders, reminder]);
+    NotificationService.scheduleReminder(reminder);
     _persist();
     notifyListeners();
   }
@@ -206,6 +215,7 @@ class AppState extends ChangeNotifier {
           .map((item) => item.id == reminder.id ? reminder : item)
           .toList(),
     );
+    NotificationService.scheduleReminder(reminder);
     _persist();
     notifyListeners();
   }
@@ -214,8 +224,15 @@ class AppState extends ChangeNotifier {
     settings = settings.copyWith(
       reminders: settings.reminders.where((item) => item.id != id).toList(),
     );
+    NotificationService.cancelReminder(id);
     _persist();
     notifyListeners();
+  }
+
+  void _syncReminders() {
+    for (final reminder in settings.reminders) {
+      NotificationService.scheduleReminder(reminder);
+    }
   }
 
   void setProfileName(String name) {
@@ -261,7 +278,7 @@ class AppState extends ChangeNotifier {
 
   void addExpense(Expense expense) {
     expenses = [...expenses, expense];
-    expenses.sort((a, b) => b.date.compareTo(a.date));
+    expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
     _incrementDailyExpense(expense.date);
     _applyStatImpact(expense);
     _persist();
@@ -300,9 +317,24 @@ class AppState extends ChangeNotifier {
 
   List<Expense> expensesForMonth(DateTime month) {
     return expenses.where((expense) {
-      return expense.date.year == month.year &&
-          expense.date.month == month.month;
+      final date = _expenseSortDate(expense);
+      return date.year == month.year && date.month == month.month;
     }).toList();
+  }
+
+  void updateExpense(Expense expense) {
+    expenses = expenses
+        .map((existing) => existing.id == expense.id ? expense : existing)
+        .toList();
+    expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
+    _persist();
+    notifyListeners();
+  }
+
+  void removeExpense(String id) {
+    expenses = expenses.where((expense) => expense.id != id).toList();
+    _persist();
+    notifyListeners();
   }
 
   List<Quest> get quests => defaultQuests;
@@ -455,9 +487,13 @@ class AppState extends ChangeNotifier {
 
   void importExpenses(List<Expense> imported) {
     expenses = [...expenses, ...imported];
-    expenses.sort((a, b) => b.date.compareTo(a.date));
+    expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
     _persist();
     notifyListeners();
+  }
+
+  DateTime _expenseSortDate(Expense expense) {
+    return expense.refundDate ?? expense.date;
   }
 
   String _dateKey(DateTime date) {
