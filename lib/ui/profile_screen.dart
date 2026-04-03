@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/quest.dart';
 import 'package:cheapcheap/models/stat_key.dart';
 import 'package:cheapcheap/state/app_state.dart';
@@ -49,21 +49,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _statLabel(AppLocalizations strings, StatKey key) {
     switch (key) {
       case StatKey.strength:
-        return strings.text('stat_strength');
+        return strings.statStrength;
       case StatKey.belly:
-        return strings.text('stat_belly');
+        return strings.statBelly;
       case StatKey.spirit:
-        return strings.text('stat_spirit');
+        return strings.statSpirit;
       case StatKey.adulthood:
-        return strings.text('stat_adulthood');
+        return strings.statAdulthood;
       case StatKey.easygoing:
-        return strings.text('stat_easygoing');
+        return strings.statEasygoing;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final profile = state.profile;
     final hasName = profile.name.trim().isNotEmpty;
@@ -89,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('profile'))),
+      appBar: AppBar(title: Text(strings.profile)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -115,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Expanded(
                 child: TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: strings.text('name')),
+                  decoration: InputDecoration(labelText: strings.name),
                   onChanged: state.setProfileName,
                 ),
               ),
@@ -136,11 +136,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${strings.text('level')} ${profile.level}',
+                    '${strings.level} ${profile.level}',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text('${strings.text('exp')}: ${profile.xp}'),
+                  Text('${strings.exp}: ${profile.xp}'),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: (profile.xp / state.xpForNextLevel()).clamp(0, 1),
@@ -150,10 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            strings.text('quests'),
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text(strings.quests, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           Stack(
             children: [
@@ -180,7 +177,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      '${strings.text('next_quests_in')} ${_formatDuration(nextQuestIn)}',
+                      '${strings.nextQuestsIn} ${_formatDuration(nextQuestIn)}',
                       style: Theme.of(
                         context,
                       ).textTheme.titleMedium?.copyWith(color: Colors.white),
@@ -191,10 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          Text(
-            strings.text('stats'),
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text(strings.stats, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           ...StatKey.values.map((key) {
             final value = profile.stats[key] ?? 0;
@@ -231,7 +225,7 @@ class _QuestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
@@ -244,9 +238,7 @@ class _QuestTile extends StatelessWidget {
       child: ListTile(
         title: Text(quest.name),
         subtitle: Text(quest.description),
-        trailing: Text(
-          isCompleted ? strings.text('done') : strings.text('available'),
-        ),
+        trailing: Text(isCompleted ? strings.done : strings.available),
       ),
     );
   }

@@ -1,13 +1,12 @@
 import 'dart:math';
 
 import 'package:cheapcheap/data/icon_options.dart';
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class CurrentStatsScreen extends StatefulWidget {
@@ -22,7 +21,7 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
     final currency = state.settings.currency;
@@ -50,78 +49,113 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final selectedExpenses = selected?.expenses ?? [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('current_stats'))),
+      appBar: AppBar(title: Text(strings.currentStats)),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              strings.text('category_breakdown'),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            if (data.isEmpty)
-              Center(child: Text(strings.text('no_expenses')))
-            else
-              Column(
-                children: [
-                  SizedBox(
-                    height: 240,
-                    child: _PieChart(
-                      data: data,
-                      selectedId: selected?.id,
-                      onSelected: (id) => setState(() => _selectedId = id),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${strings.text('total')}: ${formatCurrency(selectedTotal, currency, locale)}',
-                      ),
-                      Text(
-                        '${strings.text('percentage')}: ${selectedPercent.toStringAsFixed(1)}%',
-                      ),
-                      Text(
-                        '${strings.text('net')}: ${formatCurrency(selectedNet, currency, locale)}',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            const SizedBox(height: 16),
-            if (selected != null)
-              Expanded(
-                child: ListView.separated(
-                  itemCount: selectedExpenses.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final expense = selectedExpenses[index];
-                    return Card(
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.outlineVariant,
-                        ),
-                      ),
-                      child: ListTile(
-                        title: Text(expense.name),
-                        subtitle: Text(
-                          DateFormat('yyyy-MM-dd', locale).format(expense.date),
-                        ),
-                        trailing: Text(
-                          formatCurrency(expense.amount * -1, currency, locale),
-                        ),
-                      ),
-                    );
-                  },
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 900;
+            final breakdown = Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  strings.categoryBreakdown,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-              ),
-          ],
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: isWide ? 280 : 240,
+                  child: _PieChart(
+                    data: data,
+                    selectedId: selected?.id,
+                    onSelected: (id) => setState(() => _selectedId = id),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  children: [
+                    Text(
+                      '${strings.total}: ${formatCurrency(selectedTotal, currency, locale)}',
+                    ),
+                    Text(
+                      '${strings.percentage}: ${selectedPercent.toStringAsFixed(1)}%',
+                    ),
+                    Text(
+                      '${strings.net}: ${formatCurrency(selectedNet, currency, locale)}',
+                    ),
+                  ],
+                ),
+              ],
+            );
+
+            if (data.isEmpty) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.categoryBreakdown,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  Center(child: Text(strings.noExpenses)),
+                ],
+              );
+            }
+
+            final expenseList = selected == null
+                ? const SizedBox.shrink()
+                : ListView.separated(
+                    itemCount: selectedExpenses.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final expense = selectedExpenses[index];
+                      return Card(
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                        child: ListTile(
+                          title: Text(expense.name),
+                          subtitle: Text(formatDateShort(expense.date, locale)),
+                          trailing: Text(
+                            formatCurrency(
+                              expense.amount * -1,
+                              currency,
+                              locale,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+
+            if (isWide) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: breakdown),
+                  const SizedBox(width: 16),
+                  Expanded(child: expenseList),
+                ],
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                breakdown,
+                const SizedBox(height: 16),
+                if (selected != null) Expanded(child: expenseList),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -141,7 +175,7 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
               (item) => item.id == expense.categoryId,
               orElse: () => categories.first,
             );
-      final name = category?.name ?? strings.text('no_category');
+      final name = category?.name ?? strings.noCategory;
       final color = category == null
           ? Colors.blueGrey
           : (iconOptionById(category.iconId).color ?? Colors.teal);

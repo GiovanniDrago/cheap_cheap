@@ -1,13 +1,11 @@
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
-import 'package:cheapcheap/ui/current_stats_screen.dart';
 import 'package:cheapcheap/ui/main_shell.dart';
-import 'package:cheapcheap/ui/monthly_stats_screen.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 
 class CheapCheapApp extends StatelessWidget {
@@ -46,18 +44,12 @@ class CheapCheapApp extends StatelessWidget {
           ),
           themeMode: themeMode,
           locale: state.locale,
-          supportedLocales: const [Locale('en'), Locale('it')],
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: [
+            ...AppLocalizations.localizationsDelegates,
             MonthYearPickerLocalizations.delegate,
           ],
-          routes: {
-            '/monthly-stats': (_) => const MonthlyStatsScreen(),
-            '/current-stats': (_) => const CurrentStatsScreen(),
-          },
+          onGenerateRoute: AppRouter.onGenerateRoute,
           home: const MainShell(),
         );
       },

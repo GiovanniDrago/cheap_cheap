@@ -1,8 +1,8 @@
 import 'package:cheapcheap/data/icon_options.dart';
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
-import 'package:cheapcheap/ui/category_form_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -45,33 +45,25 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
   }
 
   Future<void> _openCreate() async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const CategoryFormScreen()));
+    await AppRouter.showCreateCategory(context);
   }
 
   Future<void> _openEdit(Category category) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => CategoryFormScreen(category: category)),
-    );
+    await AppRouter.showEditCategory(context, category: category);
   }
 
   Future<void> _openClone(Category category) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => CategoryFormScreen(category: category, isClone: true),
-      ),
-    );
+    await AppRouter.showCloneCategory(context, category: category);
   }
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final categories = state.categories;
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('categories'))),
+      appBar: AppBar(title: Text(strings.categories)),
       body: ListView.builder(
         controller: _controller,
         padding: const EdgeInsets.all(16),
@@ -93,7 +85,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                       ),
                       child: ListTile(
                         leading: const Icon(Icons.add_circle_outline),
-                        title: Text('${strings.text('add_category')} +'),
+                        title: Text('${strings.addCategory} +'),
                         onTap: _openCreate,
                       ),
                     ),
@@ -119,9 +111,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
               ),
               title: Text(category.name),
               subtitle: Text(
-                category.isDefault
-                    ? strings.text('default')
-                    : strings.text('custom'),
+                category.isDefault ? strings.defaultLabel : strings.custom,
               ),
               trailing: PopupMenuButton<String>(
                 onSelected: (value) {
@@ -135,11 +125,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   if (!category.isDefault)
                     PopupMenuItem(
                       value: 'edit',
-                      child: Text(strings.text('edit_category')),
+                      child: Text(strings.editCategory),
                     ),
                   PopupMenuItem(
                     value: 'clone',
-                    child: Text(strings.text('clone_category')),
+                    child: Text(strings.cloneCategory),
                   ),
                 ],
               ),

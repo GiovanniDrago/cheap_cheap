@@ -61,7 +61,7 @@ class AppState extends ChangeNotifier {
     settings = settingsJson == null
         ? Settings()
         : Settings.fromJson(settingsJson);
-    _syncReminders();
+    await _syncReminders();
 
     final questJson = _storage.readJson('questProgress');
     if (questJson != null) {
@@ -136,36 +136,36 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addReminder(Reminder reminder) {
+  Future<NotificationScheduleStatus> addReminder(Reminder reminder) async {
     settings = settings.copyWith(reminders: [...settings.reminders, reminder]);
-    NotificationService.scheduleReminder(reminder);
-    _persist();
+    await _persist();
     notifyListeners();
+    return NotificationService.scheduleReminder(reminder);
   }
 
-  void updateReminder(Reminder reminder) {
+  Future<NotificationScheduleStatus> updateReminder(Reminder reminder) async {
     settings = settings.copyWith(
       reminders: settings.reminders
           .map((item) => item.id == reminder.id ? reminder : item)
           .toList(),
     );
-    NotificationService.scheduleReminder(reminder);
-    _persist();
+    await _persist();
     notifyListeners();
+    return NotificationService.scheduleReminder(reminder);
   }
 
-  void removeReminder(String id) {
+  Future<void> removeReminder(String id) async {
     settings = settings.copyWith(
       reminders: settings.reminders.where((item) => item.id != id).toList(),
     );
-    NotificationService.cancelReminder(id);
-    _persist();
+    await _persist();
     notifyListeners();
+    await NotificationService.cancelReminder(id);
   }
 
-  void _syncReminders() {
+  Future<void> _syncReminders() async {
     for (final reminder in settings.reminders) {
-      NotificationService.scheduleReminder(reminder);
+      await NotificationService.scheduleReminder(reminder);
     }
   }
 

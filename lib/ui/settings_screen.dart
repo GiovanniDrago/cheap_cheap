@@ -1,9 +1,10 @@
 import 'dart:io';
 
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/models/reminder.dart';
+import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
@@ -17,25 +18,19 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
-    final themeLabels = [
-      'Mandy Red',
-      'Deep Blue',
-      'Mango',
-      'Hippie Blue',
-      'Wasabi',
-    ];
+    final themeLabels = _themeLabels(strings);
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('settings'))),
+      appBar: AppBar(title: Text(strings.settings)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           DropdownButtonFormField<int>(
             key: ValueKey('theme-${state.settings.themeIndex}'),
             initialValue: state.settings.themeIndex,
-            decoration: InputDecoration(labelText: strings.text('theme')),
+            decoration: InputDecoration(labelText: strings.theme),
             items: List.generate(
               themeLabels.length,
               (index) => DropdownMenuItem(
@@ -52,19 +47,13 @@ class SettingsScreen extends StatelessWidget {
           DropdownButtonFormField<String>(
             key: ValueKey('theme-mode-${state.settings.themeMode}'),
             initialValue: state.settings.themeMode,
-            decoration: InputDecoration(labelText: strings.text('theme_mode')),
+            decoration: InputDecoration(labelText: strings.themeMode),
             items: [
-              DropdownMenuItem(
-                value: 'light',
-                child: Text(strings.text('theme_light')),
-              ),
-              DropdownMenuItem(
-                value: 'dark',
-                child: Text(strings.text('theme_dark')),
-              ),
+              DropdownMenuItem(value: 'light', child: Text(strings.themeLight)),
+              DropdownMenuItem(value: 'dark', child: Text(strings.themeDark)),
               DropdownMenuItem(
                 value: 'system',
-                child: Text(strings.text('theme_system')),
+                child: Text(strings.themeSystem),
               ),
             ],
             onChanged: (value) {
@@ -76,10 +65,16 @@ class SettingsScreen extends StatelessWidget {
           DropdownButtonFormField<String>(
             key: ValueKey('locale-${state.settings.localeCode}'),
             initialValue: state.settings.localeCode,
-            decoration: InputDecoration(labelText: strings.text('language')),
-            items: const [
-              DropdownMenuItem(value: 'en', child: Text('English')),
-              DropdownMenuItem(value: 'it', child: Text('Italiano')),
+            decoration: InputDecoration(labelText: strings.language),
+            items: [
+              DropdownMenuItem(
+                value: 'en',
+                child: Text(strings.languageEnglish),
+              ),
+              DropdownMenuItem(
+                value: 'it',
+                child: Text(strings.languageItalian),
+              ),
             ],
             onChanged: (value) {
               if (value == null) return;
@@ -90,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
           DropdownButtonFormField<String>(
             key: ValueKey('currency-${state.settings.currency}'),
             initialValue: state.settings.currency,
-            decoration: InputDecoration(labelText: strings.text('currency')),
+            decoration: InputDecoration(labelText: strings.currency),
             items: const [
               DropdownMenuItem(value: 'EUR', child: Text('EUR')),
               DropdownMenuItem(value: 'USD', child: Text('USD')),
@@ -103,25 +98,22 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 24),
-          Text(
-            strings.text('data'),
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          Text(strings.data, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: () => _exportCsv(context),
             icon: const Icon(Icons.download),
-            label: Text(strings.text('export_csv')),
+            label: Text(strings.exportCsv),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: () => _importCsv(context),
             icon: const Icon(Icons.upload_file),
-            label: Text(strings.text('import_csv')),
+            label: Text(strings.importCsv),
           ),
           const SizedBox(height: 24),
           Text(
-            strings.text('reminders'),
+            strings.reminders,
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
@@ -142,8 +134,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  onPressed: () => state.removeReminder(reminder.id),
-                  tooltip: strings.text('delete'),
+                  onPressed: () async {
+                    await state.removeReminder(reminder.id);
+                  },
+                  tooltip: strings.delete,
                 ),
               ),
             ),
@@ -151,7 +145,7 @@ class SettingsScreen extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _openReminderDialog(context),
             icon: const Icon(Icons.add),
-            label: Text(strings.text('add_reminder')),
+            label: Text(strings.addReminder),
           ),
         ],
       ),
@@ -164,9 +158,9 @@ class SettingsScreen extends StatelessWidget {
   ) {
     switch (frequency) {
       case ReminderFrequency.daily:
-        return strings.text('reminder_daily');
+        return strings.reminderDaily;
       case ReminderFrequency.weekly:
-        return strings.text('reminder_weekly');
+        return strings.reminderWeekly;
     }
   }
 
@@ -190,9 +184,9 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context, {
     Reminder? reminder,
   }) async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final messageController = TextEditingController(
-      text: reminder?.message ?? strings.text('add_expense'),
+      text: reminder?.message ?? strings.addExpense,
     );
     var frequency = reminder?.frequency ?? ReminderFrequency.daily;
     var time = TimeOfDay(
@@ -207,116 +201,118 @@ class SettingsScreen extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           title: Text(
-            reminder == null
-                ? strings.text('add_reminder')
-                : strings.text('edit_reminder'),
+            reminder == null ? strings.addReminder : strings.editReminder,
           ),
           content: StatefulBuilder(
             builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<ReminderFrequency>(
-                    key: ValueKey('reminder-frequency-$frequency'),
-                    initialValue: frequency,
-                    decoration: InputDecoration(
-                      labelText: strings.text('reminder_frequency'),
-                    ),
-                    items: [
-                      DropdownMenuItem(
-                        value: ReminderFrequency.daily,
-                        child: Text(strings.text('reminder_daily')),
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<ReminderFrequency>(
+                      key: ValueKey('reminder-frequency-$frequency'),
+                      initialValue: frequency,
+                      decoration: InputDecoration(
+                        labelText: strings.reminderFrequency,
                       ),
-                      DropdownMenuItem(
-                        value: ReminderFrequency.weekly,
-                        child: Text(strings.text('reminder_weekly')),
-                      ),
-                    ],
-                    onChanged: (value) {
-                      if (value == null) return;
-                      setState(() => frequency = value);
-                    },
-                  ),
-                  if (frequency == ReminderFrequency.weekly)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: DropdownButtonFormField<int>(
-                        key: ValueKey('reminder-weekday-$weekday'),
-                        initialValue: weekday,
-                        decoration: InputDecoration(
-                          labelText: strings.text('weekday'),
+                      items: [
+                        DropdownMenuItem(
+                          value: ReminderFrequency.daily,
+                          child: Text(strings.reminderDaily),
                         ),
-                        items: List.generate(7, (index) => index + 1)
-                            .map(
-                              (value) => DropdownMenuItem(
-                                value: value,
-                                child: Text(
-                                  DateFormat(
-                                    'EEEE',
-                                    Localizations.localeOf(context).toString(),
-                                  ).format(DateTime(2023, 1, value + 1)),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) {
-                          if (value == null) return;
-                          setState(() => weekday = value);
-                        },
-                      ),
+                        DropdownMenuItem(
+                          value: ReminderFrequency.weekly,
+                          child: Text(strings.reminderWeekly),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        if (value == null) return;
+                        setState(() => frequency = value);
+                      },
                     ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InputDecorator(
+                    if (frequency == ReminderFrequency.weekly)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: DropdownButtonFormField<int>(
+                          key: ValueKey('reminder-weekday-$weekday'),
+                          initialValue: weekday,
                           decoration: InputDecoration(
-                            labelText: strings.text('reminder_time'),
+                            labelText: strings.weekday,
                           ),
-                          child: Text(_formatTime(time.hour, time.minute)),
+                          items: List.generate(7, (index) => index + 1)
+                              .map(
+                                (value) => DropdownMenuItem(
+                                  value: value,
+                                  child: Text(
+                                    DateFormat(
+                                      'EEEE',
+                                      Localizations.localeOf(
+                                        context,
+                                      ).toString(),
+                                    ).format(DateTime(2023, 1, value + 1)),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setState(() => weekday = value);
+                          },
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        icon: const Icon(Icons.access_time),
-                        onPressed: () async {
-                          final picked = await showTimePicker(
-                            context: context,
-                            initialTime: time,
-                          );
-                          if (picked != null) {
-                            setState(() => time = picked);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: messageController,
-                    decoration: InputDecoration(
-                      labelText: strings.text('reminder_message'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: strings.reminderTime,
+                            ),
+                            child: Text(_formatTime(time.hour, time.minute)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: const Icon(Icons.access_time),
+                          onPressed: () async {
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: time,
+                            );
+                            if (picked != null) {
+                              setState(() => time = picked);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    value: notificationsEnabled,
-                    onChanged: (value) =>
-                        setState(() => notificationsEnabled = value),
-                    title: Text(strings.text('notification_toggle')),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: messageController,
+                      decoration: InputDecoration(
+                        labelText: strings.reminderMessage,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      value: notificationsEnabled,
+                      onChanged: (value) =>
+                          setState(() => notificationsEnabled = value),
+                      title: Text(strings.notificationToggle),
+                    ),
+                  ],
+                ),
               );
             },
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(strings.text('cancel')),
+              child: Text(strings.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(strings.text('save')),
+              child: Text(strings.save),
             ),
           ],
         );
@@ -326,6 +322,13 @@ class SettingsScreen extends StatelessWidget {
     if (result != true) {
       return;
     }
+    if (!context.mounted) return;
+
+    final reminderSetup = await _prepareReminderNotifications(
+      context,
+      notificationsEnabled: notificationsEnabled,
+    );
+    if (!context.mounted) return;
 
     final nextReminder = Reminder(
       id: reminder?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
@@ -333,37 +336,162 @@ class SettingsScreen extends StatelessWidget {
       hour: time.hour,
       minute: time.minute,
       message: messageController.text.trim().isEmpty
-          ? strings.text('add_expense')
+          ? strings.addExpense
           : messageController.text.trim(),
-      notificationsEnabled: notificationsEnabled,
+      notificationsEnabled: reminderSetup.notificationsEnabled,
       weekday: frequency == ReminderFrequency.weekly ? weekday : null,
     );
+    final state = context.read<AppState>();
+    final scheduleStatus = reminder == null
+        ? await state.addReminder(nextReminder)
+        : await state.updateReminder(nextReminder);
     if (!context.mounted) return;
-    if (reminder == null) {
-      context.read<AppState>().addReminder(nextReminder);
-    } else {
-      context.read<AppState>().updateReminder(nextReminder);
+
+    final messenger = ScaffoldMessenger.of(context);
+    final feedbackMessage = _notificationFeedbackMessage(
+      context,
+      setupMessage: reminderSetup.feedbackMessage,
+      scheduleStatus: scheduleStatus,
+    );
+    if (feedbackMessage != null) {
+      messenger.showSnackBar(SnackBar(content: Text(feedbackMessage)));
+    }
+  }
+
+  Future<({bool notificationsEnabled, String? feedbackMessage})>
+  _prepareReminderNotifications(
+    BuildContext context, {
+    required bool notificationsEnabled,
+  }) async {
+    if (!notificationsEnabled) {
+      return (notificationsEnabled: false, feedbackMessage: null);
+    }
+
+    final strings = AppLocalizations.of(context)!;
+    var notificationsAllowed =
+        await NotificationService.areNotificationsEnabled();
+    if (!notificationsAllowed) {
+      if (!context.mounted) {
+        return (notificationsEnabled: false, feedbackMessage: null);
+      }
+      final shouldRequestPermission = await _showPermissionPrompt(
+        context,
+        title: strings.notificationPermissionTitle,
+        message: strings.notificationPermissionMessage,
+      );
+      if (shouldRequestPermission != true) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutNotifications,
+        );
+      }
+
+      notificationsAllowed =
+          await NotificationService.requestNotificationPermission();
+      if (!notificationsAllowed) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutNotifications,
+        );
+      }
+    }
+
+    var exactAlarmAllowed = await NotificationService.canScheduleExactAlarms();
+    if (!exactAlarmAllowed) {
+      if (!context.mounted) {
+        return (notificationsEnabled: false, feedbackMessage: null);
+      }
+      final shouldOpenSettings = await _showPermissionPrompt(
+        context,
+        title: strings.exactAlarmPermissionTitle,
+        message: strings.exactAlarmPermissionMessage,
+      );
+      if (shouldOpenSettings != true) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutExactAlarm,
+        );
+      }
+
+      exactAlarmAllowed =
+          await NotificationService.requestExactAlarmPermission();
+      if (!exactAlarmAllowed) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutExactAlarm,
+        );
+      }
+    }
+
+    return (notificationsEnabled: true, feedbackMessage: null);
+  }
+
+  Future<bool?> _showPermissionPrompt(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    final strings = AppLocalizations.of(context)!;
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.ok),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String? _notificationFeedbackMessage(
+    BuildContext context, {
+    required String? setupMessage,
+    required NotificationScheduleStatus scheduleStatus,
+  }) {
+    if (setupMessage != null) {
+      return setupMessage;
+    }
+
+    final strings = AppLocalizations.of(context)!;
+    switch (scheduleStatus) {
+      case NotificationScheduleStatus.scheduled:
+      case NotificationScheduleStatus.disabled:
+        return null;
+      case NotificationScheduleStatus.notificationPermissionDenied:
+        return strings.reminderSavedWithoutNotifications;
+      case NotificationScheduleStatus.exactAlarmPermissionDenied:
+        return strings.reminderSavedWithoutExactAlarm;
     }
   }
 
   Future<void> _exportCsv(BuildContext context) async {
     final state = context.read<AppState>();
     final messenger = ScaffoldMessenger.of(context);
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final csv = _buildCsv(state);
     final directory = await _getExportDirectory();
     final file = File('${directory.path}/cheapcheap_export.csv');
     await file.writeAsString(csv);
     if (!context.mounted) return;
     messenger.showSnackBar(
-      SnackBar(content: Text('${strings.text('csv_exported')} ${file.path}')),
+      SnackBar(content: Text('${strings.csvExported} ${file.path}')),
     );
   }
 
   Future<void> _importCsv(BuildContext context) async {
     final state = context.read<AppState>();
     final messenger = ScaffoldMessenger.of(context);
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['csv'],
@@ -377,9 +505,7 @@ class SettingsScreen extends StatelessWidget {
     state.importExpenses(imported);
     if (!context.mounted) return;
     messenger.showSnackBar(
-      SnackBar(
-        content: Text('${strings.text('csv_imported')}: ${imported.length}'),
-      ),
+      SnackBar(content: Text('${strings.csvImported}: ${imported.length}')),
     );
   }
 
@@ -508,5 +634,15 @@ class SettingsScreen extends StatelessWidget {
 
   Future<Directory> _getExportDirectory() async {
     return await getApplicationDocumentsDirectory();
+  }
+
+  List<String> _themeLabels(AppLocalizations strings) {
+    return [
+      strings.themeMandyRed,
+      strings.themeDeepBlue,
+      strings.themeMango,
+      strings.themeHippieBlue,
+      strings.themeWasabi,
+    ];
   }
 }

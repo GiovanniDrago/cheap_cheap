@@ -1,4 +1,4 @@
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/ui/categories_screen.dart';
 import 'package:cheapcheap/ui/home_screen.dart';
 import 'package:cheapcheap/ui/profile_screen.dart';
@@ -22,7 +22,7 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     if (!state.settings.hasSeenWelcome && !_welcomeInProgress) {
       _welcomeInProgress = true;
@@ -44,7 +44,7 @@ class _MainShellState extends State<MainShell> {
             messenger.showSnackBar(
               SnackBar(
                 content: Text(
-                  '${strings.text('quest_completed')}: ${state.lastQuestCompletedName}',
+                  '${strings.questCompleted}: ${state.lastQuestCompletedName}',
                 ),
               ),
             );
@@ -69,22 +69,22 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
-            label: strings.text('home'),
+            label: strings.home,
           ),
           NavigationDestination(
             icon: const Icon(Icons.category_outlined),
             selectedIcon: const Icon(Icons.category),
-            label: strings.text('categories'),
+            label: strings.categories,
           ),
           NavigationDestination(
             icon: const Icon(Icons.person_outline),
             selectedIcon: const Icon(Icons.person),
-            label: strings.text('profile'),
+            label: strings.profile,
           ),
           NavigationDestination(
             icon: const Icon(Icons.settings_outlined),
             selectedIcon: const Icon(Icons.settings),
-            label: strings.text('settings'),
+            label: strings.settings,
           ),
         ],
       ),
@@ -97,14 +97,14 @@ class _MainShellState extends State<MainShell> {
     await showDialog<void>(
       context: context,
       builder: (context) {
-        final strings = AppLocalizations.of(context);
+        final strings = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: Text(strings.text('app_name')),
-          content: Text(strings.text('welcome_intro')),
+          title: Text(strings.appName),
+          content: Text(strings.welcomeIntro),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(strings.text('next')),
+              child: Text(strings.next),
             ),
           ],
         );
@@ -118,14 +118,14 @@ class _MainShellState extends State<MainShell> {
     await showDialog<void>(
       context: context,
       builder: (context) {
-        final strings = AppLocalizations.of(context);
+        final strings = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: Text(strings.text('profile')),
-          content: Text(strings.text('welcome_profile')),
+          title: Text(strings.profile),
+          content: Text(strings.welcomeProfile),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(strings.text('ok')),
+              child: Text(strings.ok),
             ),
           ],
         );

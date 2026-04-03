@@ -1,9 +1,8 @@
 import 'package:cheapcheap/data/icon_options.dart';
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/expense.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
-import 'package:cheapcheap/ui/expense_detail_screen.dart';
-import 'package:cheapcheap/ui/expense_form_screen.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
@@ -60,37 +59,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _openAddExpense(DateTime month) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ExpenseFormScreen(initialMonth: month)),
-    );
+    AppRouter.showExpenseForm(context, initialMonth: month);
   }
 
   void _openExpenseDetails(Expense expense, {bool openSplit = false}) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ExpenseDetailScreen(
-          expense: expense,
-          initialSplitExpanded: openSplit,
-        ),
-      ),
+    AppRouter.showExpenseDetails(
+      context,
+      expense: expense,
+      initialSplitExpanded: openSplit,
     );
   }
 
   Future<void> _confirmDelete(Expense expense) async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(strings.text('confirm_delete')),
+          title: Text(strings.confirmDelete),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(strings.text('no')),
+              child: Text(strings.no),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(strings.text('yes')),
+              child: Text(strings.yes),
             ),
           ],
         );
@@ -102,66 +96,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openRefundDialog(Expense expense) async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toString();
     var date = expense.refundDate ?? DateTime.now();
     final noteController = TextEditingController(text: expense.refundNote);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(strings.text('refund')),
+          title: Text(strings.refund),
           content: StatefulBuilder(
             builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: strings.text('refund_date'),
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: strings.refundDate,
+                            ),
+                            child: Text(formatDateShort(date, locale)),
                           ),
-                          child: Text(DateFormat('yyyy-MM-dd').format(date)),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: date,
-                            firstDate: DateTime(2018, 1),
-                            lastDate: DateTime(2100, 12),
-                          );
-                          if (picked != null) {
-                            setState(() => date = picked);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: noteController,
-                    decoration: InputDecoration(
-                      labelText: strings.text('refund_note'),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: date,
+                              firstDate: DateTime(2018, 1),
+                              lastDate: DateTime(2100, 12),
+                            );
+                            if (picked != null) {
+                              setState(() => date = picked);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    maxLines: 2,
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: noteController,
+                      decoration: InputDecoration(
+                        labelText: strings.refundNote,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
               );
             },
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(strings.text('cancel')),
+              child: Text(strings.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(strings.text('save')),
+              child: Text(strings.save),
             ),
           ],
         );
@@ -177,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openExpenseMenu(Expense expense) async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final action = await showModalBottomSheet<String>(
       context: context,
       builder: (context) {
@@ -187,22 +184,22 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.receipt_long),
-                title: Text(strings.text('details')),
+                title: Text(strings.details),
                 onTap: () => Navigator.of(context).pop('details'),
               ),
               ListTile(
                 leading: const Icon(Icons.call_split),
-                title: Text(strings.text('split')),
+                title: Text(strings.split),
                 onTap: () => Navigator.of(context).pop('split'),
               ),
               ListTile(
                 leading: const Icon(Icons.undo),
-                title: Text(strings.text('refund')),
+                title: Text(strings.refund),
                 onTap: () => Navigator.of(context).pop('refund'),
               ),
               ListTile(
                 leading: const Icon(Icons.delete_outline),
-                title: Text(strings.text('delete')),
+                title: Text(strings.delete),
                 onTap: () => Navigator.of(context).pop('delete'),
               ),
             ],
@@ -230,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
     final monthLabel = DateFormat.yMMMM(locale).format(_currentMonth);
@@ -303,20 +300,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: const Icon(Icons.more_vert),
                     onSelected: (value) {
                       if (value == 'monthly_stats') {
-                        Navigator.of(context).pushNamed('/monthly-stats');
+                        AppRouter.showMonthlyStats(context);
                       }
                       if (value == 'current_stats') {
-                        Navigator.of(context).pushNamed('/current-stats');
+                        AppRouter.showCurrentStats(context);
                       }
                     },
                     itemBuilder: (_) => [
                       PopupMenuItem(
                         value: 'monthly_stats',
-                        child: Text(strings.text('monthly_stats')),
+                        child: Text(strings.monthlyStats),
                       ),
                       PopupMenuItem(
                         value: 'current_stats',
-                        child: Text(strings.text('current_stats')),
+                        child: Text(strings.currentStats),
                       ),
                     ],
                   ),
@@ -377,10 +374,10 @@ class _ExpenseMonthView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (expenses.isEmpty) {
-      final strings = AppLocalizations.of(context);
+      final strings = AppLocalizations.of(context)!;
       return Center(
         child: Text(
-          strings.text('no_expenses'),
+          strings.noExpenses,
           style: Theme.of(context).textTheme.bodyLarge,
         ),
       );

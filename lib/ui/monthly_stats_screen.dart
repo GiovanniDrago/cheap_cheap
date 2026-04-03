@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ class MonthlyStatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
     final currency = state.settings.currency;
@@ -40,64 +40,69 @@ class MonthlyStatsScreen extends StatelessWidget {
     final currentIndex = DateTime.now().month - 1;
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('monthly_stats'))),
+      appBar: AppBar(title: Text(strings.monthlyStats)),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              strings.text('year_overview'),
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 220,
-              child: CustomPaint(
-                painter: _MonthlyBarChartPainter(
-                  totals: totals,
-                  maxAbs: maxAbs,
-                  positiveColor: Colors.green[600]!,
-                  negativeColor: Colors.red[600]!,
-                  axisColor: Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(12, (index) {
-                final month = DateTime(year, index + 1, 1);
-                return Expanded(
-                  child: Text(
-                    DateFormat.MMM(locale).format(month),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                );
-              }),
-            ),
-            const SizedBox(height: 24),
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final chartHeight = constraints.maxWidth >= 800 ? 280.0 : 220.0;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _LegendChip(
-                  label: strings.text('income'),
-                  color: Colors.green[600]!,
+                Text(
+                  strings.yearOverview,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                _LegendChip(
-                  label: strings.text('expense'),
-                  color: Colors.red[600]!,
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: chartHeight,
+                  child: CustomPaint(
+                    painter: _MonthlyBarChartPainter(
+                      totals: totals,
+                      maxAbs: maxAbs,
+                      positiveColor: Colors.green[600]!,
+                      negativeColor: Colors.red[600]!,
+                      axisColor: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(12, (index) {
+                    final month = DateTime(year, index + 1, 1);
+                    return Expanded(
+                      child: Text(
+                        DateFormat.MMM(locale).format(month),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 24),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 8,
+                  children: [
+                    _LegendChip(
+                      label: strings.income,
+                      color: Colors.green[600]!,
+                    ),
+                    _LegendChip(
+                      label: strings.expense,
+                      color: Colors.red[600]!,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '${strings.total}: ${formatCurrency(totals[currentIndex], currency, locale)}',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
               ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '${strings.text('total')}: ${formatCurrency(totals[currentIndex], currency, locale)}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
+            );
+          },
         ),
       ),
     );

@@ -1,14 +1,13 @@
 import 'package:cheapcheap/data/icon_options.dart';
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/models/recurrence.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
-import 'package:cheapcheap/ui/category_form_screen.dart';
 import 'package:cheapcheap/ui/widgets/icon_picker.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ExpenseFormScreen extends StatefulWidget {
@@ -46,6 +45,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   SplitFrequency _splitFrequency = SplitFrequency.monthly;
   bool _splitReminderEnabled = false;
   int _splitReminderDaysBefore = 1;
+  String? _localeCode;
 
   @override
   void initState() {
@@ -59,6 +59,14 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         : DateTime(now.year, now.month, now.day);
     _recurrenceDay = _selectedDate.day;
     _recurrenceMonth = _selectedDate.month;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextLocaleCode = Localizations.localeOf(context).toString();
+    if (_localeCode == nextLocaleCode) return;
+    _localeCode = nextLocaleCode;
     _syncDateController();
   }
 
@@ -74,7 +82,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   void _syncDateController() {
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final locale = _localeCode;
+    if (locale == null) return;
+    _dateController.text = formatDateField(_selectedDate, locale);
   }
 
   Future<void> _pickDate() async {
@@ -128,9 +138,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   Future<void> _openCategoryCreation() async {
-    final created = await Navigator.of(context).push<Category>(
-      MaterialPageRoute(builder: (_) => const CategoryFormScreen()),
-    );
+    final created = await AppRouter.showCreateCategory(context);
     if (created != null) {
       setState(() {
         _selectedCategory = created;
@@ -140,10 +148,6 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   void _save() {
-    final parsedDate = DateTime.tryParse(_dateController.text.trim());
-    if (parsedDate != null) {
-      _selectedDate = parsedDate;
-    }
     final amount = parseAmount(_amountController.text);
     final splitPlan = _splitEnabled
         ? SplitPlan(
@@ -186,26 +190,28 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   String _defaultSplitMessage(String name) {
-    final strings = AppLocalizations.of(context);
-    final label = name.isEmpty ? strings.text('expense') : name;
-    return '${strings.text('split_message_default')} $label (1/$_splitPayments)';
+    final strings = AppLocalizations.of(context)!;
+    final label = name.isEmpty ? strings.expense : name;
+    return '${strings.splitMessageDefault} $label (1/$_splitPayments)';
   }
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final categories = state.categories;
 
     return Scaffold(
-      appBar: AppBar(title: Text(strings.text('add_expense'))),
+      appBar: AppBar(title: Text(strings.addExpense)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _dateController,
+            readOnly: true,
+            onTap: _pickDate,
             decoration: InputDecoration(
-              labelText: strings.text('date'),
+              labelText: strings.date,
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -220,17 +226,13 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 ],
               ),
             ),
-            keyboardType: TextInputType.datetime,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<Category?>(
             key: ValueKey(_selectedCategory?.id),
             initialValue: _selectedCategory,
             items: [
-              DropdownMenuItem(
-                value: null,
-                child: Text(strings.text('no_category')),
-              ),
+              DropdownMenuItem(value: null, child: Text(strings.noCategory)),
               for (final category in categories)
                 DropdownMenuItem(value: category, child: Text(category.name)),
             ],
@@ -241,7 +243,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               });
             },
             decoration: InputDecoration(
-              labelText: strings.text('category'),
+              labelText: strings.category,
               suffixIcon: IconButton(
                 icon: const Icon(Icons.add_circle_outline),
                 onPressed: _openCategoryCreation,
@@ -254,7 +256,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               Expanded(
                 child: TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: strings.text('name')),
+                  decoration: InputDecoration(labelText: strings.name),
                 ),
               ),
               const SizedBox(width: 12),
@@ -276,7 +278,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
           const SizedBox(height: 16),
           TextField(
             controller: _amountController,
-            decoration: InputDecoration(labelText: strings.text('amount')),
+            decoration: InputDecoration(labelText: strings.amount),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
@@ -288,14 +290,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 _overrideType = true;
               });
             },
-            title: Text(
-              _isIncome ? strings.text('income') : strings.text('expense'),
-            ),
+            title: Text(_isIncome ? strings.income : strings.expense),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _noteController,
-            decoration: InputDecoration(labelText: strings.text('note')),
+            decoration: InputDecoration(labelText: strings.note),
             maxLines: 3,
           ),
           const SizedBox(height: 12),
@@ -310,7 +310,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 }
               });
             },
-            title: Text(strings.text('recurrence')),
+            title: Text(strings.recurrence),
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -320,19 +320,19 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   items: [
                     DropdownMenuItem(
                       value: RecurrenceType.none,
-                      child: Text(strings.text('recurrence_none')),
+                      child: Text(strings.recurrenceNone),
                     ),
                     DropdownMenuItem(
                       value: RecurrenceType.daily,
-                      child: Text(strings.text('recurrence_daily')),
+                      child: Text(strings.recurrenceDaily),
                     ),
                     DropdownMenuItem(
                       value: RecurrenceType.monthly,
-                      child: Text(strings.text('recurrence_monthly')),
+                      child: Text(strings.recurrenceMonthly),
                     ),
                     DropdownMenuItem(
                       value: RecurrenceType.yearly,
-                      child: Text(strings.text('recurrence_yearly')),
+                      child: Text(strings.recurrenceYearly),
                     ),
                   ],
                   onChanged: (value) {
@@ -349,9 +349,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                   child: DropdownButtonFormField<int>(
                     key: ValueKey('recurrence-day-$_recurrenceDay'),
                     initialValue: _recurrenceDay,
-                    decoration: InputDecoration(
-                      labelText: strings.text('day_of_month'),
-                    ),
+                    decoration: InputDecoration(labelText: strings.dayOfMonth),
                     items: List.generate(31, (index) => index + 1)
                         .map(
                           (day) => DropdownMenuItem(
@@ -375,9 +373,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         child: DropdownButtonFormField<int>(
                           key: ValueKey('recurrence-month-$_recurrenceMonth'),
                           initialValue: _recurrenceMonth,
-                          decoration: InputDecoration(
-                            labelText: strings.text('month'),
-                          ),
+                          decoration: InputDecoration(labelText: strings.month),
                           items: List.generate(12, (index) => index + 1)
                               .map(
                                 (month) => DropdownMenuItem(
@@ -397,9 +393,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         child: DropdownButtonFormField<int>(
                           key: ValueKey('recurrence-day-$_recurrenceDay'),
                           initialValue: _recurrenceDay,
-                          decoration: InputDecoration(
-                            labelText: strings.text('day'),
-                          ),
+                          decoration: InputDecoration(labelText: strings.day),
                           items: List.generate(31, (index) => index + 1)
                               .map(
                                 (day) => DropdownMenuItem(
@@ -420,7 +414,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               SwitchListTile(
                 value: _reminderEnabled,
                 onChanged: (value) => setState(() => _reminderEnabled = value),
-                title: Text(strings.text('reminder')),
+                title: Text(strings.reminder),
               ),
               if (_reminderEnabled)
                 Padding(
@@ -431,7 +425,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         key: ValueKey('reminder-days-$_reminderDaysBefore'),
                         initialValue: _reminderDaysBefore,
                         decoration: InputDecoration(
-                          labelText: strings.text('days_before'),
+                          labelText: strings.daysBefore,
                         ),
                         items: List.generate(14, (index) => index + 1)
                             .map(
@@ -449,9 +443,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _reminderMessageController,
-                        decoration: InputDecoration(
-                          labelText: strings.text('message'),
-                        ),
+                        decoration: InputDecoration(labelText: strings.message),
                       ),
                     ],
                   ),
@@ -464,12 +456,12 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
             onExpansionChanged: (expanded) {
               setState(() => _splitExpanded = expanded);
             },
-            title: Text(strings.text('split')),
+            title: Text(strings.split),
             children: [
               SwitchListTile(
                 value: _splitEnabled,
                 onChanged: (value) => setState(() => _splitEnabled = value),
-                title: Text(strings.text('split_enabled')),
+                title: Text(strings.splitEnabled),
               ),
               if (_splitEnabled)
                 Padding(
@@ -480,7 +472,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         key: ValueKey('split-payments-$_splitPayments'),
                         initialValue: _splitPayments,
                         decoration: InputDecoration(
-                          labelText: strings.text('split_payments'),
+                          labelText: strings.splitPayments,
                         ),
                         items: List.generate(24, (index) => index + 2)
                             .map(
@@ -500,16 +492,16 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         key: ValueKey(_splitFrequency),
                         initialValue: _splitFrequency,
                         decoration: InputDecoration(
-                          labelText: strings.text('split_frequency'),
+                          labelText: strings.splitFrequency,
                         ),
                         items: [
                           DropdownMenuItem(
                             value: SplitFrequency.weekly,
-                            child: Text(strings.text('reminder_weekly')),
+                            child: Text(strings.reminderWeekly),
                           ),
                           DropdownMenuItem(
                             value: SplitFrequency.monthly,
-                            child: Text(strings.text('recurrence_monthly')),
+                            child: Text(strings.recurrenceMonthly),
                           ),
                         ],
                         onChanged: (value) {
@@ -522,7 +514,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                         value: _splitReminderEnabled,
                         onChanged: (value) =>
                             setState(() => _splitReminderEnabled = value),
-                        title: Text(strings.text('reminder')),
+                        title: Text(strings.reminder),
                       ),
                       if (_splitReminderEnabled)
                         Column(
@@ -533,7 +525,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                               ),
                               initialValue: _splitReminderDaysBefore,
                               decoration: InputDecoration(
-                                labelText: strings.text('days_before'),
+                                labelText: strings.daysBefore,
                               ),
                               items: List.generate(14, (index) => index + 1)
                                   .map(
@@ -554,7 +546,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                             TextField(
                               controller: _splitMessageController,
                               decoration: InputDecoration(
-                                labelText: strings.text('message'),
+                                labelText: strings.message,
                               ),
                             ),
                           ],
@@ -565,7 +557,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _save, child: Text(strings.text('save'))),
+          ElevatedButton(onPressed: _save, child: Text(strings.save)),
         ],
       ),
     );

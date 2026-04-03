@@ -1,5 +1,5 @@
 import 'package:cheapcheap/data/icon_options.dart';
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/stat_key.dart';
 import 'package:cheapcheap/state/app_state.dart';
@@ -86,28 +86,26 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
   String _statLabel(AppLocalizations strings, StatKey key) {
     switch (key) {
       case StatKey.strength:
-        return strings.text('stat_strength');
+        return strings.statStrength;
       case StatKey.belly:
-        return strings.text('stat_belly');
+        return strings.statBelly;
       case StatKey.spirit:
-        return strings.text('stat_spirit');
+        return strings.statSpirit;
       case StatKey.adulthood:
-        return strings.text('stat_adulthood');
+        return strings.statAdulthood;
       case StatKey.easygoing:
-        return strings.text('stat_easygoing');
+        return strings.statEasygoing;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final isEdit = widget.category != null && !widget.isClone;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isEdit ? strings.text('edit_category') : strings.text('add_category'),
-        ),
+        title: Text(isEdit ? strings.editCategory : strings.addCategory),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -117,7 +115,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
               Expanded(
                 child: TextField(
                   controller: _nameController,
-                  decoration: InputDecoration(labelText: strings.text('name')),
+                  decoration: InputDecoration(labelText: strings.name),
                 ),
               ),
               const SizedBox(width: 12),
@@ -140,18 +138,14 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
           SwitchListTile(
             value: _isIncomeDefault,
             onChanged: (value) => setState(() => _isIncomeDefault = value),
-            title: Text(strings.text('default_type')),
-            subtitle: Text(
-              _isIncomeDefault
-                  ? strings.text('income')
-                  : strings.text('expense'),
-            ),
+            title: Text(strings.defaultType),
+            subtitle: Text(_isIncomeDefault ? strings.income : strings.expense),
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<StatKey>(
             key: ValueKey(_statKey),
             initialValue: _statKey,
-            decoration: InputDecoration(labelText: strings.text('stat_focus')),
+            decoration: InputDecoration(labelText: strings.statFocus),
             items: StatKey.values
                 .map(
                   (key) => DropdownMenuItem(
@@ -166,7 +160,7 @@ class _CategoryFormScreenState extends State<CategoryFormScreen> {
             },
           ),
           const SizedBox(height: 24),
-          ElevatedButton(onPressed: _save, child: Text(strings.text('save'))),
+          ElevatedButton(onPressed: _save, child: Text(strings.save)),
         ],
       ),
     );

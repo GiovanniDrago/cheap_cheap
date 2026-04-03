@@ -1,10 +1,9 @@
-import 'package:cheapcheap/l10n/app_localizations.dart';
+import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ExpenseDetailScreen extends StatefulWidget {
@@ -39,6 +38,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   int _splitReminderDaysBefore = 1;
   DateTime? _refundDate;
   String _refundNote = '';
+  String? _localeCode;
 
   @override
   void initState() {
@@ -47,7 +47,6 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     _selectedDate = expense.date;
     _refundDate = expense.refundDate;
     _refundNote = expense.refundNote;
-    _dateController.text = DateFormat('yyyy-MM-dd').format(expense.date);
     _nameController.text = expense.name;
     _amountController.text = expense.amount.toStringAsFixed(2);
     _noteController.text = expense.note;
@@ -63,11 +62,19 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
       _splitReminderDaysBefore = splitPlan.reminderDaysBefore;
       _splitMessageController.text = splitPlan.reminderMessage;
     }
-    _dateController.addListener(_markDirty);
     _nameController.addListener(_markDirty);
     _amountController.addListener(_markDirty);
     _noteController.addListener(_markDirty);
     _splitMessageController.addListener(_markDirty);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final nextLocaleCode = Localizations.localeOf(context).toString();
+    if (_localeCode == nextLocaleCode) return;
+    _localeCode = nextLocaleCode;
+    _syncDateController();
   }
 
   @override
@@ -85,6 +92,12 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     if (hasChanges != _dirty) {
       setState(() => _dirty = hasChanges);
     }
+  }
+
+  void _syncDateController() {
+    final locale = _localeCode;
+    if (locale == null) return;
+    _dateController.text = formatDateField(_selectedDate, locale);
   }
 
   bool _hasChanges() {
@@ -115,12 +128,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   }
 
   Expense _buildExpense() {
-    final parsedDate = DateTime.tryParse(_dateController.text.trim());
-    if (parsedDate != null) {
-      _selectedDate = parsedDate;
-    }
     final amount = parseAmount(_amountController.text);
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final splitPlan = _splitEnabled
         ? SplitPlan(
             totalPayments: _splitPayments,
@@ -146,8 +155,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   }
 
   String _defaultSplitMessage(String name, AppLocalizations strings) {
-    final label = name.isEmpty ? strings.text('expense') : name;
-    return '${strings.text('split_message_default')} $label (1/$_splitPayments)';
+    final label = name.isEmpty ? strings.expense : name;
+    return '${strings.splitMessageDefault} $label (1/$_splitPayments)';
   }
 
   Future<void> _pickDate() async {
@@ -160,73 +169,77 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+        _syncDateController();
       });
       _markDirty();
     }
   }
 
   Future<void> _openRefundDialog() async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     var date = _refundDate ?? DateTime.now();
     final noteController = TextEditingController(text: _refundNote);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(strings.text('refund')),
+          title: Text(strings.refund),
           content: StatefulBuilder(
             builder: (context, setState) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: strings.text('refund_date'),
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: strings.refundDate,
+                            ),
+                            child: Text(
+                              formatDateShort(date, _localeCode ?? 'en'),
+                            ),
                           ),
-                          child: Text(DateFormat('yyyy-MM-dd').format(date)),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: date,
-                            firstDate: DateTime(2018, 1),
-                            lastDate: DateTime(2100, 12),
-                          );
-                          if (picked != null) {
-                            setState(() => date = picked);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: noteController,
-                    decoration: InputDecoration(
-                      labelText: strings.text('refund_note'),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: date,
+                              firstDate: DateTime(2018, 1),
+                              lastDate: DateTime(2100, 12),
+                            );
+                            if (picked != null) {
+                              setState(() => date = picked);
+                            }
+                          },
+                        ),
+                      ],
                     ),
-                    maxLines: 2,
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: noteController,
+                      decoration: InputDecoration(
+                        labelText: strings.refundNote,
+                      ),
+                      maxLines: 2,
+                    ),
+                  ],
+                ),
               );
             },
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(strings.text('cancel')),
+              child: Text(strings.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(strings.text('save')),
+              child: Text(strings.save),
             ),
           ],
         );
@@ -242,20 +255,20 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   }
 
   Future<void> _confirmDelete() async {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(strings.text('confirm_delete')),
+          title: Text(strings.confirmDelete),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(strings.text('no')),
+              child: Text(strings.no),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(strings.text('yes')),
+              child: Text(strings.yes),
             ),
           ],
         );
@@ -275,7 +288,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final strings = AppLocalizations.of(context);
+    final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final categories = state.categories;
     final locale = state.locale.toString();
@@ -284,7 +297,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(strings.text('details')),
+        title: Text(strings.details),
         actions: [
           PopupMenuButton<String>(
             onSelected: (value) {
@@ -299,15 +312,9 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               }
             },
             itemBuilder: (_) => [
-              PopupMenuItem(value: 'split', child: Text(strings.text('split'))),
-              PopupMenuItem(
-                value: 'refund',
-                child: Text(strings.text('refund')),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text(strings.text('delete')),
-              ),
+              PopupMenuItem(value: 'split', child: Text(strings.split)),
+              PopupMenuItem(value: 'refund', child: Text(strings.refund)),
+              PopupMenuItem(value: 'delete', child: Text(strings.delete)),
             ],
           ),
         ],
@@ -331,17 +338,17 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      strings.text('refund'),
+                      strings.refund,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${strings.text('date')}: ${DateFormat('yyyy-MM-dd').format(_refundDate!)}',
+                      '${strings.date}: ${formatDateShort(_refundDate!, locale)}',
                     ),
                     if (_refundNote.trim().isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
-                        child: Text('${strings.text('note')}: $_refundNote'),
+                        child: Text('${strings.note}: $_refundNote'),
                       ),
                   ],
                 ),
@@ -350,24 +357,22 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
           if (_refundDate != null) const SizedBox(height: 16),
           TextField(
             controller: _dateController,
+            readOnly: true,
+            onTap: _pickDate,
             decoration: InputDecoration(
-              labelText: strings.text('date'),
+              labelText: strings.date,
               suffixIcon: IconButton(
                 icon: const Icon(Icons.calendar_today),
                 onPressed: _pickDate,
               ),
             ),
-            keyboardType: TextInputType.datetime,
           ),
           const SizedBox(height: 16),
           DropdownButtonFormField<Category?>(
             key: ValueKey(_selectedCategory?.id),
             initialValue: _selectedCategory,
             items: [
-              DropdownMenuItem(
-                value: null,
-                child: Text(strings.text('no_category')),
-              ),
+              DropdownMenuItem(value: null, child: Text(strings.noCategory)),
               for (final category in categories)
                 DropdownMenuItem(value: category, child: Text(category.name)),
             ],
@@ -375,17 +380,17 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               setState(() => _selectedCategory = value);
               _markDirty();
             },
-            decoration: InputDecoration(labelText: strings.text('category')),
+            decoration: InputDecoration(labelText: strings.category),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: strings.text('name')),
+            decoration: InputDecoration(labelText: strings.name),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _amountController,
-            decoration: InputDecoration(labelText: strings.text('amount')),
+            decoration: InputDecoration(labelText: strings.amount),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: 12),
@@ -395,14 +400,12 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
               setState(() => _isIncome = value);
               _markDirty();
             },
-            title: Text(
-              _isIncome ? strings.text('income') : strings.text('expense'),
-            ),
+            title: Text(_isIncome ? strings.income : strings.expense),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _noteController,
-            decoration: InputDecoration(labelText: strings.text('note')),
+            decoration: InputDecoration(labelText: strings.note),
             maxLines: 3,
           ),
           const SizedBox(height: 16),
@@ -411,7 +414,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
             onExpansionChanged: (expanded) {
               setState(() => _splitExpanded = expanded);
             },
-            title: Text(strings.text('split')),
+            title: Text(strings.split),
             children: [
               SwitchListTile(
                 value: _splitEnabled,
@@ -419,7 +422,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                   setState(() => _splitEnabled = value);
                   _markDirty();
                 },
-                title: Text(strings.text('split_enabled')),
+                title: Text(strings.splitEnabled),
               ),
               if (_splitEnabled)
                 Padding(
@@ -430,7 +433,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                         key: ValueKey('split-payments-$_splitPayments'),
                         initialValue: _splitPayments,
                         decoration: InputDecoration(
-                          labelText: strings.text('split_payments'),
+                          labelText: strings.splitPayments,
                         ),
                         items: List.generate(24, (index) => index + 2)
                             .map(
@@ -451,16 +454,16 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                         key: ValueKey(_splitFrequency),
                         initialValue: _splitFrequency,
                         decoration: InputDecoration(
-                          labelText: strings.text('split_frequency'),
+                          labelText: strings.splitFrequency,
                         ),
                         items: [
                           DropdownMenuItem(
                             value: SplitFrequency.weekly,
-                            child: Text(strings.text('reminder_weekly')),
+                            child: Text(strings.reminderWeekly),
                           ),
                           DropdownMenuItem(
                             value: SplitFrequency.monthly,
-                            child: Text(strings.text('recurrence_monthly')),
+                            child: Text(strings.recurrenceMonthly),
                           ),
                         ],
                         onChanged: (value) {
@@ -476,7 +479,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                           setState(() => _splitReminderEnabled = value);
                           _markDirty();
                         },
-                        title: Text(strings.text('reminder')),
+                        title: Text(strings.reminder),
                       ),
                       if (_splitReminderEnabled)
                         Column(
@@ -487,7 +490,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                               ),
                               initialValue: _splitReminderDaysBefore,
                               decoration: InputDecoration(
-                                labelText: strings.text('days_before'),
+                                labelText: strings.daysBefore,
                               ),
                               items: List.generate(14, (index) => index + 1)
                                   .map(
@@ -509,7 +512,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                             TextField(
                               controller: _splitMessageController,
                               decoration: InputDecoration(
-                                labelText: strings.text('message'),
+                                labelText: strings.message,
                               ),
                             ),
                           ],
@@ -518,7 +521,7 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          '${strings.text('split_schedule')}: 1/$_splitPayments',
+                          '${strings.splitSchedule}: 1/$_splitPayments',
                           style: Theme.of(context).textTheme.titleSmall,
                         ),
                       ),
