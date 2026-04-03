@@ -256,6 +256,18 @@ class AppState extends ChangeNotifier {
     }).toList();
   }
 
+  List<ExpenseAllocation> expenseAllocationsForMonth(DateTime month) {
+    return expenses
+        .expand((expense) => expense.allocations())
+        .where(
+          (allocation) =>
+              allocation.date.year == month.year &&
+              allocation.date.month == month.month,
+        )
+        .toList()
+      ..sort((a, b) => b.date.compareTo(a.date));
+  }
+
   void updateExpense(Expense expense) {
     expenses = expenses
         .map((existing) => existing.id == expense.id ? expense : existing)

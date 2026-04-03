@@ -230,13 +230,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final strings = AppLocalizations.of(context)!;
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
-    final monthLabel = DateFormat.yMMMM(locale).format(_currentMonth);
-    final currentExpenses = state.expensesForMonth(_currentMonth);
-    final monthTotal = currentExpenses
-        .where((expense) => !expense.isRefunded)
+    final monthLabel = formatMonthYear(_currentMonth, locale);
+    final currentAllocations = state.expenseAllocationsForMonth(_currentMonth);
+    final monthTotal = currentAllocations
+        .where((allocation) => !allocation.expense.isRefunded)
         .fold<double>(
           0,
-          (sum, expense) => sum + expense.amount * (expense.isIncome ? 1 : -1),
+          (sum, allocation) =>
+              sum + allocation.amount * (allocation.expense.isIncome ? 1 : -1),
         );
 
     return Scaffold(
@@ -330,10 +331,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 itemBuilder: (context, index) {
                   final month = _monthForIndex(index);
-                  final expenses = state.expensesForMonth(month);
+                  final allocations = state.expenseAllocationsForMonth(month);
                   return _ExpenseMonthView(
                     month: month,
-                    expenses: expenses,
+                    allocations: allocations,
                     currency: state.settings.currency,
                     locale: locale,
                     onExpenseTap: _openExpenseDetails,
@@ -357,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class _ExpenseMonthView extends StatelessWidget {
   const _ExpenseMonthView({
     required this.month,
-    required this.expenses,
+    required this.allocations,
     required this.currency,
     required this.locale,
     required this.onExpenseTap,
@@ -365,7 +366,7 @@ class _ExpenseMonthView extends StatelessWidget {
   });
 
   final DateTime month;
-  final List<Expense> expenses;
+  final List<ExpenseAllocation> allocations;
   final String currency;
   final String locale;
   final void Function(Expense expense) onExpenseTap;
@@ -373,7 +374,7 @@ class _ExpenseMonthView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (expenses.isEmpty) {
+    if (allocations.isEmpty) {
       final strings = AppLocalizations.of(context)!;
       return Center(
         child: Text(
@@ -383,10 +384,10 @@ class _ExpenseMonthView extends StatelessWidget {
       );
     }
 
-    final grouped = <DateTime, List<Expense>>{};
-    for (final expense in expenses) {
-      final day = dateOnly(expense.refundDate ?? expense.date);
-      grouped.putIfAbsent(day, () => []).add(expense);
+    final grouped = <DateTime, List<ExpenseAllocation>>{};
+    for (final allocation in allocations) {
+      final day = dateOnly(allocation.date);
+      grouped.putIfAbsent(day, () => []).add(allocation);
     }
     final days = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
@@ -395,10 +396,10 @@ class _ExpenseMonthView extends StatelessWidget {
       itemCount: days.length,
       itemBuilder: (context, index) {
         final day = days[index];
-        final dayExpenses = grouped[day] ?? [];
+        final dayAllocations = grouped[day] ?? [];
         return _ExpenseDaySection(
           date: day,
-          expenses: dayExpenses,
+          allocations: dayAllocations,
           currency: currency,
           locale: locale,
           onExpenseTap: onExpenseTap,
@@ -412,7 +413,7 @@ class _ExpenseMonthView extends StatelessWidget {
 class _ExpenseDaySection extends StatelessWidget {
   const _ExpenseDaySection({
     required this.date,
-    required this.expenses,
+    required this.allocations,
     required this.currency,
     required this.locale,
     required this.onExpenseTap,
@@ -420,7 +421,7 @@ class _ExpenseDaySection extends StatelessWidget {
   });
 
   final DateTime date;
-  final List<Expense> expenses;
+  final List<ExpenseAllocation> allocations;
   final String currency;
   final String locale;
   final void Function(Expense expense) onExpenseTap;
@@ -447,7 +448,8 @@ class _ExpenseDaySection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          ...expenses.map((expense) {
+          ...allocations.map((allocation) {
+            final expense = allocation.expense;
             final option = iconOptionById(expense.iconId);
             final isRefunded = expense.isRefunded;
             return Card(
@@ -471,14 +473,14 @@ class _ExpenseDaySection extends StatelessWidget {
                   child: Icon(option.icon, color: option.color),
                 ),
                 title: Text(expense.name),
-                subtitle: Text(expense.note.isEmpty ? '-' : expense.note),
+                subtitle: expense.note.isEmpty ? null : Text(expense.note),
                 trailing: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
                       formatCurrency(
-                        expense.amount * (expense.isIncome ? 1 : -1),
+                        allocation.amount * (expense.isIncome ? 1 : -1),
                         currency,
                         locale,
                       ),
@@ -489,10 +491,9 @@ class _ExpenseDaySection extends StatelessWidget {
                             : Colors.red[700],
                       ),
                     ),
-                    if (expense.splitPlan != null &&
-                        expense.splitPlan!.totalPayments > 1)
+                    if (allocation.isSplit)
                       Text(
-                        '1/${expense.splitPlan!.totalPayments}',
+                        '${allocation.installmentNumber}/${allocation.totalPayments}',
                         style: Theme.of(context).textTheme.labelMedium,
                       ),
                   ],

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:cheapcheap/models/recurrence.dart';
 
 enum SplitFrequency { weekly, monthly }
@@ -55,6 +57,24 @@ class SplitPlan {
       reminderMessage: json['reminderMessage'] as String? ?? '',
     );
   }
+}
+
+class ExpenseAllocation {
+  const ExpenseAllocation({
+    required this.expense,
+    required this.date,
+    required this.amount,
+    required this.installmentNumber,
+    required this.totalPayments,
+  });
+
+  final Expense expense;
+  final DateTime date;
+  final double amount;
+  final int installmentNumber;
+  final int totalPayments;
+
+  bool get isSplit => totalPayments > 1;
 }
 
 class Expense {
@@ -167,11 +187,62 @@ class Expense {
     if (plan == null || plan.totalPayments <= 1) {
       return [amount];
     }
-    final totalCents = (amount * 100).round();
-    final perCents = (totalCents / plan.totalPayments).round();
-    final amounts = List<int>.filled(plan.totalPayments, perCents);
-    final diff = totalCents - (perCents * plan.totalPayments);
-    amounts[amounts.length - 1] = amounts.last + diff;
-    return amounts.map((value) => value / 100).toList();
+
+    final sign = amount < 0 ? -1 : 1;
+    final totalCents = (amount.abs() * 100).round();
+    final perCents = totalCents ~/ plan.totalPayments;
+    final remainder = totalCents % plan.totalPayments;
+
+    return List<double>.generate(plan.totalPayments, (index) {
+      final cents = perCents + (index < remainder ? 1 : 0);
+      return sign * cents / 100;
+    });
+  }
+
+  List<ExpenseAllocation> allocations() {
+    final plan = splitPlan;
+    final amounts = splitAmounts();
+    final totalPayments = plan?.totalPayments ?? 1;
+
+    return List<ExpenseAllocation>.generate(amounts.length, (index) {
+      return ExpenseAllocation(
+        expense: this,
+        date: _allocationDate(index),
+        amount: amounts[index],
+        installmentNumber: index + 1,
+        totalPayments: totalPayments,
+      );
+    });
+  }
+
+  DateTime _allocationDate(int installmentIndex) {
+    final plan = splitPlan;
+    if (plan == null || plan.totalPayments <= 1) {
+      return refundDate ?? date;
+    }
+
+    switch (plan.frequency) {
+      case SplitFrequency.weekly:
+        return date.add(Duration(days: installmentIndex * 7));
+      case SplitFrequency.monthly:
+        return _addMonthsKeepingDay(date, installmentIndex);
+    }
+  }
+
+  DateTime _addMonthsKeepingDay(DateTime source, int monthOffset) {
+    final targetMonth = DateTime(source.year, source.month + monthOffset, 1);
+    final maxDay = DateTime(targetMonth.year, targetMonth.month + 1, 0).day;
+    final clampedDay = math.min(source.day, maxDay);
+
+    return DateTime(
+      targetMonth.year,
+      targetMonth.month,
+      clampedDay,
+      source.hour,
+      source.minute,
+      source.second,
+      source.millisecond,
+      source.microsecond,
+    );
   }
 }

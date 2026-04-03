@@ -26,13 +26,13 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final locale = state.locale.toString();
     final currency = state.settings.currency;
     final now = DateTime.now();
-    final expenses = state
-        .expensesForMonth(DateTime(now.year, now.month, 1))
-        .where((expense) => !expense.isRefunded)
-        .where((expense) => !expense.isIncome)
+    final allocations = state
+        .expenseAllocationsForMonth(DateTime(now.year, now.month, 1))
+        .where((allocation) => !allocation.expense.isRefunded)
+        .where((allocation) => !allocation.expense.isIncome)
         .toList();
 
-    final data = _buildCategoryStats(expenses, state.categories, strings);
+    final data = _buildCategoryStats(allocations, state.categories, strings);
     final total = data.fold<double>(0, (sum, item) => sum + item.totalAbs);
     _CategoryStat? selected;
     if (data.isNotEmpty) {
@@ -46,7 +46,7 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final selectedTotal = selected?.totalAbs ?? 0;
     final selectedPercent = total == 0 ? 0 : (selectedTotal / total) * 100;
     final selectedNet = selected?.totalNet ?? 0;
-    final selectedExpenses = selected?.expenses ?? [];
+    final selectedAllocations = selected?.allocations ?? [];
 
     return Scaffold(
       appBar: AppBar(title: Text(strings.currentStats)),
@@ -108,11 +108,12 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
             final expenseList = selected == null
                 ? const SizedBox.shrink()
                 : ListView.separated(
-                    itemCount: selectedExpenses.length,
+                    itemCount: selectedAllocations.length,
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 8),
                     itemBuilder: (context, index) {
-                      final expense = selectedExpenses[index];
+                      final allocation = selectedAllocations[index];
+                      final expense = allocation.expense;
                       return Card(
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -123,10 +124,12 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
                         ),
                         child: ListTile(
                           title: Text(expense.name),
-                          subtitle: Text(formatDateShort(expense.date, locale)),
+                          subtitle: Text(
+                            formatDateShort(allocation.date, locale),
+                          ),
                           trailing: Text(
                             formatCurrency(
-                              expense.amount * -1,
+                              allocation.amount * -1,
                               currency,
                               locale,
                             ),
@@ -162,12 +165,13 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
   }
 
   List<_CategoryStat> _buildCategoryStats(
-    List<Expense> expenses,
+    List<ExpenseAllocation> allocations,
     List<Category> categories,
     AppLocalizations strings,
   ) {
     final Map<String, _CategoryStat> stats = {};
-    for (final expense in expenses) {
+    for (final allocation in allocations) {
+      final expense = allocation.expense;
       final categoryId = expense.categoryId ?? 'no_category';
       final category = expense.categoryId == null
           ? null
@@ -183,7 +187,7 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
         categoryId,
         () => _CategoryStat(id: categoryId, name: name, color: color),
       );
-      stats[categoryId]!.addExpense(expense);
+      stats[categoryId]!.addAllocation(allocation);
     }
     final list = stats.values.toList()
       ..sort((a, b) => b.totalAbs.compareTo(a.totalAbs));
@@ -197,14 +201,14 @@ class _CategoryStat {
   final String id;
   final String name;
   final Color color;
-  final List<Expense> expenses = [];
+  final List<ExpenseAllocation> allocations = [];
   double totalAbs = 0;
   double totalNet = 0;
 
-  void addExpense(Expense expense) {
-    expenses.add(expense);
-    totalAbs += expense.amount;
-    totalNet += expense.amount * -1;
+  void addAllocation(ExpenseAllocation allocation) {
+    allocations.add(allocation);
+    totalAbs += allocation.amount;
+    totalNet += allocation.amount * -1;
   }
 }
 

@@ -4,7 +4,6 @@ import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class MonthlyStatsScreen extends StatelessWidget {
@@ -20,13 +19,14 @@ class MonthlyStatsScreen extends StatelessWidget {
 
     final totals = List<double>.generate(12, (index) {
       final month = DateTime(year, index + 1, 1);
-      final expenses = state.expensesForMonth(month);
-      return expenses
-          .where((expense) => !expense.isRefunded)
+      final allocations = state.expenseAllocationsForMonth(month);
+      return allocations
+          .where((allocation) => !allocation.expense.isRefunded)
           .fold<double>(
             0,
-            (sum, expense) =>
-                sum + expense.amount * (expense.isIncome ? 1 : -1),
+            (sum, allocation) =>
+                sum +
+                allocation.amount * (allocation.expense.isIncome ? 1 : -1),
           );
     });
     final maxAbs = totals.isEmpty
@@ -73,7 +73,7 @@ class MonthlyStatsScreen extends StatelessWidget {
                     final month = DateTime(year, index + 1, 1);
                     return Expanded(
                       child: Text(
-                        DateFormat.MMM(locale).format(month),
+                        formatMonthShort(month, locale),
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.labelSmall,
                       ),
