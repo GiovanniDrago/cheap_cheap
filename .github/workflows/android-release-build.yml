@@ -1,0 +1,46 @@
+name: Android Publish Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-android-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Fix Gradle wrapper URL
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('android/gradle/wrapper/gradle-wrapper.properties')
+          content = path.read_text()
+          content = content.replace(
+              'https\\://github.com/gradle/gradle-distributions/releases/download/',
+              'https\\://services.gradle.org/distributions/',
+          )
+          path.write_text(content)
+          PY
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload release APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
