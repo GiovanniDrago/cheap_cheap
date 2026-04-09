@@ -152,8 +152,53 @@ class NotificationService {
     return NotificationScheduleStatus.scheduled;
   }
 
+  static Future<NotificationScheduleStatus> scheduleExpenseReminder({
+    required String expenseId,
+    required DateTime scheduledAt,
+    required String message,
+  }) async {
+    final id = _notificationId('expense:$expenseId');
+    final scheduledDate = tz.TZDateTime.from(scheduledAt, tz.local);
+    if (!scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) {
+      await _plugin.cancel(id: id);
+      return NotificationScheduleStatus.disabled;
+    }
+
+    if (!await areNotificationsEnabled()) {
+      await _plugin.cancel(id: id);
+      return NotificationScheduleStatus.notificationPermissionDenied;
+    }
+
+    if (!await canScheduleExactAlarms()) {
+      await _plugin.cancel(id: id);
+      return NotificationScheduleStatus.exactAlarmPermissionDenied;
+    }
+
+    await _plugin.zonedSchedule(
+      id: id,
+      title: 'Reminder',
+      body: message,
+      scheduledDate: scheduledDate,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'reminders_channel',
+          'Reminders',
+          channelDescription: 'Expense reminder notifications',
+        ),
+        iOS: DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+
+    return NotificationScheduleStatus.scheduled;
+  }
+
   static Future<void> cancelReminder(String id) async {
     await _plugin.cancel(id: _notificationId(id));
+  }
+
+  static Future<void> cancelExpenseReminder(String expenseId) async {
+    await _plugin.cancel(id: _notificationId('expense:$expenseId'));
   }
 
   static int _notificationId(String id) {

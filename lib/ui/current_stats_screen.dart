@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:cheapcheap/data/icon_options.dart';
 import 'package:cheapcheap/l10n/generated/app_localizations.dart';
@@ -6,6 +6,7 @@ import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -66,11 +67,27 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
                 const SizedBox(height: 16),
                 SizedBox(
                   height: isWide ? 280 : 240,
-                  child: _PieChart(
+                  child: _CategoryDonutChart(
                     data: data,
                     selectedId: selected?.id,
                     onSelected: (id) => setState(() => _selectedId = id),
                   ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 6,
+                  alignment: WrapAlignment.center,
+                  children: data
+                      .map(
+                        (item) => _LegendDot(
+                          label: item.name,
+                          color: item.color,
+                          selected: item.id == selected?.id,
+                          onTap: () => setState(() => _selectedId = item.id),
+                        ),
+                      )
+                      .toList(),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -180,9 +197,7 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
               orElse: () => categories.first,
             );
       final name = category?.name ?? strings.noCategory;
-      final color = category == null
-          ? Colors.blueGrey
-          : (iconOptionById(category.iconId).color ?? Colors.teal);
+      final color = _categoryColor(categoryId, category);
       stats.putIfAbsent(
         categoryId,
         () => _CategoryStat(id: categoryId, name: name, color: color),
@@ -192,6 +207,35 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final list = stats.values.toList()
       ..sort((a, b) => b.totalAbs.compareTo(a.totalAbs));
     return list;
+  }
+
+  Color _categoryColor(String categoryId, Category? category) {
+    final iconColor = category == null
+        ? null
+        : iconOptionById(category.iconId).color;
+    if (iconColor != null) {
+      return iconColor;
+    }
+
+    final palette = <Color>[
+      Colors.teal,
+      Colors.indigo,
+      Colors.deepOrange,
+      Colors.pink,
+      Colors.cyan,
+      Colors.deepPurple,
+      Colors.amber.shade700,
+      Colors.green.shade600,
+      Colors.red.shade400,
+      Colors.blue.shade600,
+      Colors.lime.shade700,
+      Colors.brown.shade500,
+    ];
+    final hash = categoryId.codeUnits.fold<int>(0, (value, unit) {
+      return (value * 31 + unit) & 0x7fffffff;
+    });
+
+    return palette[hash % palette.length];
   }
 }
 
@@ -212,8 +256,8 @@ class _CategoryStat {
   }
 }
 
-class _PieChart extends StatefulWidget {
-  const _PieChart({
+class _CategoryDonutChart extends StatelessWidget {
+  const _CategoryDonutChart({
     required this.data,
     required this.selectedId,
     required this.onSelected,
@@ -224,132 +268,63 @@ class _PieChart extends StatefulWidget {
   final ValueChanged<String?> onSelected;
 
   @override
-  State<_PieChart> createState() => _PieChartState();
-}
-
-class _PieChartState extends State<_PieChart> {
-  final List<_Slice> _slices = [];
-
-  @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Builder(
-            builder: (context) {
-              return GestureDetector(
-                onTapDown: (details) =>
-                    _handleTap(details.localPosition, context.size),
-                child: CustomPaint(
-                  painter: _PieChartPainter(
-                    data: widget.data,
-                    selectedId: widget.selectedId,
-                    onSlices: (slices) {
-                      _slices
-                        ..clear()
-                        ..addAll(slices);
+    final total = data.fold<double>(0, (sum, item) => sum + item.totalAbs);
+    final theme = Theme.of(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final chartSize = math.min(
+          constraints.maxWidth >= 500 ? 220.0 : 180.0,
+          constraints.maxHeight - 24,
+        );
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Center(
+            child: SizedBox.square(
+              dimension: chartSize,
+              child: PieChart(
+                PieChartData(
+                  startDegreeOffset: -90,
+                  centerSpaceRadius: chartSize * 0.24,
+                  sectionsSpace: 3,
+                  pieTouchData: PieTouchData(
+                    touchCallback: (event, response) {
+                      if (!event.isInterestedForInteractions) return;
+                      final touched = response?.touchedSection;
+                      final index = touched?.touchedSectionIndex ?? -1;
+                      if (index < 0 || index >= data.length) return;
+                      onSelected(data[index].id);
                     },
                   ),
+                  sections: data.map((item) {
+                    final percent = total == 0
+                        ? 0.0
+                        : (item.totalAbs / total) * 100;
+                    final isSelected = item.id == selectedId;
+                    return PieChartSectionData(
+                      value: item.totalAbs,
+                      color: item.color,
+                      radius: isSelected ? chartSize * 0.32 : chartSize * 0.28,
+                      title: percent >= 8
+                          ? '${percent.toStringAsFixed(0)}%'
+                          : '',
+                      titleStyle: theme.textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    );
+                  }).toList(),
                 ),
-              );
-            },
+                duration: const Duration(milliseconds: 250),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 10,
-          runSpacing: 6,
-          alignment: WrapAlignment.center,
-          children: widget.data
-              .map(
-                (item) => _LegendDot(
-                  label: item.name,
-                  color: item.color,
-                  selected: item.id == widget.selectedId,
-                  onTap: () => widget.onSelected(item.id),
-                ),
-              )
-              .toList(),
-        ),
-      ],
+        );
+      },
     );
   }
-
-  void _handleTap(Offset position, Size? size) {
-    if (size == null) return;
-    final center = Offset(size.width / 2, size.height / 2);
-    final vector = position - center;
-    final radius = min(size.width, size.height) / 2;
-    if (vector.distance > radius) return;
-    var angle = atan2(vector.dy, vector.dx) + pi / 2;
-    if (angle < 0) {
-      angle += 2 * pi;
-    }
-    final normalized = angle;
-    for (final slice in _slices) {
-      if (normalized >= slice.start &&
-          normalized <= slice.start + slice.sweep) {
-        widget.onSelected(slice.id);
-        break;
-      }
-    }
-  }
-}
-
-class _PieChartPainter extends CustomPainter {
-  _PieChartPainter({
-    required this.data,
-    required this.selectedId,
-    required this.onSlices,
-  });
-
-  final List<_CategoryStat> data;
-  final String? selectedId;
-  final ValueChanged<List<_Slice>> onSlices;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final total = data.fold<double>(0, (sum, item) => sum + item.totalAbs);
-    if (total == 0) return;
-    final radius = min(size.width, size.height) / 2;
-    final rect = Rect.fromCircle(
-      center: size.center(Offset.zero),
-      radius: radius,
-    );
-    var startAngle = -pi / 2;
-    final slices = <_Slice>[];
-
-    for (final item in data) {
-      final sweep = (item.totalAbs / total) * 2 * pi;
-      final paint = Paint()
-        ..color = item.color
-        ..style = PaintingStyle.fill;
-      final isSelected = item.id == selectedId;
-      final adjustedRect = isSelected
-          ? Rect.fromCircle(
-              center: size.center(Offset.zero),
-              radius: radius * 0.92,
-            )
-          : rect;
-      canvas.drawArc(adjustedRect, startAngle, sweep, true, paint);
-      slices.add(_Slice(id: item.id, start: startAngle + pi / 2, sweep: sweep));
-      startAngle += sweep;
-    }
-    onSlices(slices);
-  }
-
-  @override
-  bool shouldRepaint(covariant _PieChartPainter oldDelegate) {
-    return oldDelegate.data != data || oldDelegate.selectedId != selectedId;
-  }
-}
-
-class _Slice {
-  _Slice({required this.id, required this.start, required this.sweep});
-
-  final String id;
-  final double start;
-  final double sweep;
 }
 
 class _LegendDot extends StatelessWidget {

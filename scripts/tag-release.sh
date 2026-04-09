@@ -9,6 +9,11 @@ fi
 tag="$1"
 version="${tag#v}"
 
+if [[ "$tag" == "$version" ]]; then
+  echo "tag must start with v (example: v1.2.3)" >&2
+  exit 1
+fi
+
 if [[ ! -f "pubspec.yaml" ]]; then
   echo "pubspec.yaml not found" >&2
   exit 1

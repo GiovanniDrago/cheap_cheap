@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
     if (confirmed == true && mounted) {
-      context.read<AppState>().removeExpense(expense.id);
+      await context.read<AppState>().removeExpense(expense.id);
     }
   }
 
@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
         refundDate: date,
         refundNote: noteController.text.trim(),
       );
-      context.read<AppState>().updateExpense(updated);
+      await context.read<AppState>().updateExpense(updated);
     }
   }
 
@@ -232,13 +232,39 @@ class _HomeScreenState extends State<HomeScreen> {
     final locale = state.locale.toString();
     final monthLabel = formatMonthYear(_currentMonth, locale);
     final currentAllocations = state.expenseAllocationsForMonth(_currentMonth);
-    final monthTotal = currentAllocations
+    final now = DateTime.now();
+    final today = dateOnly(now);
+    final fullMonthTotal = currentAllocations
         .where((allocation) => !allocation.expense.isRefunded)
         .fold<double>(
           0,
           (sum, allocation) =>
               sum + allocation.amount * (allocation.expense.isIncome ? 1 : -1),
         );
+    final effectiveMonthTotal =
+        _currentMonth.year < today.year ||
+            (_currentMonth.year == today.year &&
+                _currentMonth.month < today.month)
+        ? fullMonthTotal
+        : _currentMonth.year > today.year ||
+              (_currentMonth.year == today.year &&
+                  _currentMonth.month > today.month)
+        ? 0.0
+        : currentAllocations
+              .where((allocation) => !allocation.expense.isRefunded)
+              .where((allocation) => !dateOnly(allocation.date).isAfter(today))
+              .fold<double>(
+                0,
+                (sum, allocation) =>
+                    sum +
+                    allocation.amount * (allocation.expense.isIncome ? 1 : -1),
+              );
+    final monthTotalLabel = _formatMonthTotalLabel(
+      effectiveTotal: effectiveMonthTotal,
+      fullTotal: fullMonthTotal,
+      currency: state.settings.currency,
+      locale: locale,
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -273,16 +299,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    formatCurrency(
-                                      monthTotal,
-                                      state.settings.currency,
-                                      locale,
-                                    ),
+                                    monthTotalLabel,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleSmall
                                         ?.copyWith(
-                                          color: monthTotal >= 0
+                                          color: effectiveMonthTotal >= 0
                                               ? Colors.green[700]
                                               : Colors.red[700],
                                         ),
@@ -353,6 +375,21 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+String _formatMonthTotalLabel({
+  required double effectiveTotal,
+  required double fullTotal,
+  required String currency,
+  required String locale,
+}) {
+  final effectiveLabel = formatCurrency(effectiveTotal, currency, locale);
+  if ((effectiveTotal - fullTotal).abs() < 0.005) {
+    return effectiveLabel;
+  }
+
+  final fullLabel = formatCurrency(fullTotal, currency, locale);
+  return '$effectiveLabel ($fullLabel)';
 }
 
 class _ExpenseMonthView extends StatelessWidget {

@@ -91,6 +91,11 @@ class Expense {
     this.splitPlan,
     this.refundDate,
     this.refundNote = '',
+    this.reminderEnabled = false,
+    this.reminderDaysBefore = 1,
+    this.reminderHour,
+    this.reminderMinute,
+    this.reminderMessage = '',
   });
 
   final String id;
@@ -105,8 +110,27 @@ class Expense {
   final SplitPlan? splitPlan;
   final DateTime? refundDate;
   final String refundNote;
+  final bool reminderEnabled;
+  final int reminderDaysBefore;
+  final int? reminderHour;
+  final int? reminderMinute;
+  final String reminderMessage;
 
   bool get isRefunded => refundDate != null;
+
+  DateTime? get reminderDateTime {
+    if (!reminderEnabled || reminderHour == null || reminderMinute == null) {
+      return null;
+    }
+
+    return DateTime(
+      date.year,
+      date.month,
+      date.day - reminderDaysBefore,
+      reminderHour!,
+      reminderMinute!,
+    );
+  }
 
   Expense copyWith({
     String? id,
@@ -121,6 +145,11 @@ class Expense {
     SplitPlan? splitPlan,
     DateTime? refundDate,
     String? refundNote,
+    bool? reminderEnabled,
+    int? reminderDaysBefore,
+    int? reminderHour,
+    int? reminderMinute,
+    String? reminderMessage,
   }) {
     return Expense(
       id: id ?? this.id,
@@ -135,6 +164,11 @@ class Expense {
       splitPlan: splitPlan ?? this.splitPlan,
       refundDate: refundDate ?? this.refundDate,
       refundNote: refundNote ?? this.refundNote,
+      reminderEnabled: reminderEnabled ?? this.reminderEnabled,
+      reminderDaysBefore: reminderDaysBefore ?? this.reminderDaysBefore,
+      reminderHour: reminderHour ?? this.reminderHour,
+      reminderMinute: reminderMinute ?? this.reminderMinute,
+      reminderMessage: reminderMessage ?? this.reminderMessage,
     );
   }
 
@@ -152,6 +186,11 @@ class Expense {
       'splitPlan': splitPlan?.toJson(),
       'refundDate': refundDate?.toIso8601String(),
       'refundNote': refundNote,
+      'reminderEnabled': reminderEnabled,
+      'reminderDaysBefore': reminderDaysBefore,
+      'reminderHour': reminderHour,
+      'reminderMinute': reminderMinute,
+      'reminderMessage': reminderMessage,
     };
   }
 
@@ -179,6 +218,11 @@ class Expense {
           ? null
           : DateTime.parse(json['refundDate'] as String),
       refundNote: json['refundNote'] as String? ?? '',
+      reminderEnabled: json['reminderEnabled'] as bool? ?? false,
+      reminderDaysBefore: json['reminderDaysBefore'] as int? ?? 1,
+      reminderHour: json['reminderHour'] as int?,
+      reminderMinute: json['reminderMinute'] as int?,
+      reminderMessage: json['reminderMessage'] as String? ?? '',
     );
   }
 

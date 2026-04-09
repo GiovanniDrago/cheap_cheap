@@ -62,6 +62,7 @@ class AppState extends ChangeNotifier {
         ? Settings()
         : Settings.fromJson(settingsJson);
     await _syncReminders();
+    await _syncExpenseReminders();
 
     final questJson = _storage.readJson('questProgress');
     if (questJson != null) {
@@ -210,12 +211,12 @@ class AppState extends ChangeNotifier {
     );
   }
 
-  void addExpense(Expense expense) {
+  Future<NotificationScheduleStatus?> addExpense(Expense expense) async {
     expenses = [...expenses, expense];
     expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
     _incrementDailyExpense(expense.date);
     _applyStatImpact(expense);
-    _persist();
+    await _persist();
     notifyListeners();
     _tryCompleteQuest('quest_add_expense');
     if (_dailyExpenseCount(expense.date) >= 3) {
@@ -225,6 +226,8 @@ class AppState extends ChangeNotifier {
         expense.recurrence!.type != RecurrenceType.none) {
       _tryCompleteQuest('quest_add_recurrent');
     }
+
+    return _scheduleExpenseReminder(expense);
   }
 
   void _applyStatImpact(Expense expense) {
@@ -268,19 +271,46 @@ class AppState extends ChangeNotifier {
       ..sort((a, b) => b.date.compareTo(a.date));
   }
 
-  void updateExpense(Expense expense) {
+  Future<NotificationScheduleStatus?> updateExpense(Expense expense) async {
     expenses = expenses
         .map((existing) => existing.id == expense.id ? expense : existing)
         .toList();
     expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
-    _persist();
+    await _persist();
     notifyListeners();
+
+    return _scheduleExpenseReminder(expense);
   }
 
-  void removeExpense(String id) {
+  Future<void> removeExpense(String id) async {
     expenses = expenses.where((expense) => expense.id != id).toList();
-    _persist();
+    await _persist();
     notifyListeners();
+    await NotificationService.cancelExpenseReminder(id);
+  }
+
+  Future<void> _syncExpenseReminders() async {
+    for (final expense in expenses) {
+      await _scheduleExpenseReminder(expense);
+    }
+  }
+
+  Future<NotificationScheduleStatus?> _scheduleExpenseReminder(
+    Expense expense,
+  ) async {
+    await NotificationService.cancelExpenseReminder(expense.id);
+    final reminderDateTime = expense.reminderDateTime;
+    if (!expense.reminderEnabled || reminderDateTime == null) {
+      return null;
+    }
+
+    return NotificationService.scheduleExpenseReminder(
+      expenseId: expense.id,
+      scheduledAt: reminderDateTime,
+      message: expense.reminderMessage.trim().isEmpty
+          ? expense.name
+          : expense.reminderMessage,
+    );
   }
 
   List<Quest> get quests => defaultQuests;

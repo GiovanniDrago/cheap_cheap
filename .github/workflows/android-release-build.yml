@@ -14,28 +14,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           cache: true
 
-      - name: Fix Gradle wrapper URL
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path('android/gradle/wrapper/gradle-wrapper.properties')
-          content = path.read_text()
-          content = content.replace(
-              'https\\://github.com/gradle/gradle-distributions/releases/download/',
-              'https\\://services.gradle.org/distributions/',
-          )
-          path.write_text(content)
-          PY
-
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/cheapcheap.keystore
+
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=cheapcheap.keystore" >> android/key.properties
 
       - name: Build release APK
         run: flutter build apk --release

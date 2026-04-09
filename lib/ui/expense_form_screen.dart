@@ -4,8 +4,10 @@ import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/navigation/app_router.dart';
+import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/ui/widgets/icon_picker.dart';
+import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +27,8 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
+  final TextEditingController _expenseReminderMessageController =
+      TextEditingController();
   final TextEditingController _reminderMessageController =
       TextEditingController();
   final TextEditingController _splitMessageController = TextEditingController();
@@ -37,6 +41,9 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   RecurrenceType _recurrenceType = RecurrenceType.none;
   int _recurrenceDay = DateTime.now().day;
   int _recurrenceMonth = DateTime.now().month;
+  bool _expenseReminderEnabled = false;
+  int _expenseReminderDaysBefore = 1;
+  TimeOfDay _expenseReminderTime = const TimeOfDay(hour: 9, minute: 0);
   bool _reminderEnabled = false;
   int _reminderDaysBefore = 1;
   bool _splitExpanded = false;
@@ -76,6 +83,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     _nameController.dispose();
     _amountController.dispose();
     _noteController.dispose();
+    _expenseReminderMessageController.dispose();
     _reminderMessageController.dispose();
     _splitMessageController.dispose();
     super.dispose();
@@ -99,6 +107,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
         _selectedDate = picked;
         _recurrenceDay = picked.day;
         _recurrenceMonth = picked.month;
+        _syncExpenseReminderAvailability();
         _syncDateController();
       });
     }
@@ -110,8 +119,43 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
       _selectedDate = DateTime(now.year, now.month, now.day);
       _recurrenceDay = _selectedDate.day;
       _recurrenceMonth = _selectedDate.month;
+      _syncExpenseReminderAvailability();
       _syncDateController();
     });
+  }
+
+  bool get _canScheduleExpenseReminder {
+    return dateOnly(_selectedDate).isAfter(dateOnly(DateTime.now()));
+  }
+
+  List<int> get _expenseReminderDayOptions {
+    final daysUntilExpense = dateOnly(
+      _selectedDate,
+    ).difference(dateOnly(DateTime.now())).inDays;
+    final maxDaysBefore = daysUntilExpense.clamp(0, 14);
+    return List.generate(maxDaysBefore + 1, (index) => index);
+  }
+
+  void _syncExpenseReminderAvailability() {
+    if (!_canScheduleExpenseReminder) {
+      _expenseReminderEnabled = false;
+      _expenseReminderDaysBefore = 1;
+      return;
+    }
+
+    final options = _expenseReminderDayOptions;
+    if (!options.contains(_expenseReminderDaysBefore)) {
+      _expenseReminderDaysBefore = options.last;
+    }
+  }
+
+  Future<void> _pickExpenseReminderTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _expenseReminderTime,
+    );
+    if (picked == null) return;
+    setState(() => _expenseReminderTime = picked);
   }
 
   void _applyCategoryDefaults(Category? category) {
@@ -147,7 +191,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final amount = parseAmount(_amountController.text);
     final splitPlan = _splitEnabled
         ? SplitPlan(
@@ -160,7 +204,7 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
                 : _splitMessageController.text.trim(),
           )
         : null;
-    final expense = Expense(
+    var expense = Expense(
       id: DateTime.now().microsecondsSinceEpoch.toString(),
       date: _selectedDate,
       name: _nameController.text.trim(),
@@ -184,8 +228,41 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
               reminderMessage: _reminderMessageController.text.trim(),
             ),
       splitPlan: splitPlan,
+      reminderEnabled: _expenseReminderEnabled && _canScheduleExpenseReminder,
+      reminderDaysBefore: _expenseReminderDaysBefore,
+      reminderHour: _expenseReminderTime.hour,
+      reminderMinute: _expenseReminderTime.minute,
+      reminderMessage: _expenseReminderMessageController.text.trim().isEmpty
+          ? _defaultExpenseReminderMessage()
+          : _expenseReminderMessageController.text.trim(),
     );
-    context.read<AppState>().addExpense(expense);
+
+    String? setupMessage;
+    if (expense.reminderEnabled) {
+      final reminderSetup = await _prepareReminderNotifications(
+        context,
+        notificationsEnabled: true,
+      );
+      setupMessage = reminderSetup.feedbackMessage;
+      expense = expense.copyWith(
+        reminderEnabled: reminderSetup.notificationsEnabled,
+      );
+    }
+
+    if (!mounted) return;
+    final scheduleStatus = await context.read<AppState>().addExpense(expense);
+    if (!mounted) return;
+
+    final feedbackMessage = _notificationFeedbackMessage(
+      context,
+      setupMessage: setupMessage,
+      scheduleStatus: scheduleStatus,
+    );
+    if (feedbackMessage != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(feedbackMessage)));
+    }
     Navigator.of(context).pop();
   }
 
@@ -193,6 +270,136 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
     final strings = AppLocalizations.of(context)!;
     final label = name.isEmpty ? strings.expense : name;
     return '${strings.splitMessageDefault} $label (1/$_splitPayments)';
+  }
+
+  String _defaultExpenseReminderMessage() {
+    final strings = AppLocalizations.of(context)!;
+    if (_noteController.text.trim().isNotEmpty) {
+      return _noteController.text.trim();
+    }
+    if (_nameController.text.trim().isNotEmpty) {
+      return _nameController.text.trim();
+    }
+    return strings.addExpense;
+  }
+
+  Future<({bool notificationsEnabled, String? feedbackMessage})>
+  _prepareReminderNotifications(
+    BuildContext context, {
+    required bool notificationsEnabled,
+  }) async {
+    if (!notificationsEnabled) {
+      return (notificationsEnabled: false, feedbackMessage: null);
+    }
+
+    final strings = AppLocalizations.of(context)!;
+    var notificationsAllowed =
+        await NotificationService.areNotificationsEnabled();
+    if (!notificationsAllowed) {
+      if (!context.mounted) {
+        return (notificationsEnabled: false, feedbackMessage: null);
+      }
+      final shouldRequestPermission = await _showPermissionPrompt(
+        context,
+        title: strings.notificationPermissionTitle,
+        message: strings.notificationPermissionMessage,
+      );
+      if (shouldRequestPermission != true) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutNotifications,
+        );
+      }
+
+      notificationsAllowed =
+          await NotificationService.requestNotificationPermission();
+      if (!notificationsAllowed) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutNotifications,
+        );
+      }
+    }
+
+    var exactAlarmAllowed = await NotificationService.canScheduleExactAlarms();
+    if (!exactAlarmAllowed) {
+      if (!context.mounted) {
+        return (notificationsEnabled: false, feedbackMessage: null);
+      }
+      final shouldOpenSettings = await _showPermissionPrompt(
+        context,
+        title: strings.exactAlarmPermissionTitle,
+        message: strings.exactAlarmPermissionMessage,
+      );
+      if (shouldOpenSettings != true) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutExactAlarm,
+        );
+      }
+
+      exactAlarmAllowed =
+          await NotificationService.requestExactAlarmPermission();
+      if (!exactAlarmAllowed) {
+        return (
+          notificationsEnabled: false,
+          feedbackMessage: strings.reminderSavedWithoutExactAlarm,
+        );
+      }
+    }
+
+    return (notificationsEnabled: true, feedbackMessage: null);
+  }
+
+  Future<bool?> _showPermissionPrompt(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    final strings = AppLocalizations.of(context)!;
+    return showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(strings.ok),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  String? _notificationFeedbackMessage(
+    BuildContext context, {
+    required String? setupMessage,
+    required NotificationScheduleStatus? scheduleStatus,
+  }) {
+    if (setupMessage != null) {
+      return setupMessage;
+    }
+    if (scheduleStatus == null) {
+      return null;
+    }
+
+    final strings = AppLocalizations.of(context)!;
+    switch (scheduleStatus) {
+      case NotificationScheduleStatus.scheduled:
+      case NotificationScheduleStatus.disabled:
+        return null;
+      case NotificationScheduleStatus.notificationPermissionDenied:
+        return strings.reminderSavedWithoutNotifications;
+      case NotificationScheduleStatus.exactAlarmPermissionDenied:
+        return strings.reminderSavedWithoutExactAlarm;
+    }
   }
 
   @override
@@ -299,6 +506,80 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
             maxLines: 3,
           ),
           const SizedBox(height: 12),
+          if (_canScheduleExpenseReminder) ...[
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 12),
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      value: _expenseReminderEnabled,
+                      onChanged: (value) {
+                        setState(() => _expenseReminderEnabled = value);
+                      },
+                      title: Text(strings.reminder),
+                    ),
+                    if (_expenseReminderEnabled)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Text(strings.reminderTime),
+                              subtitle: Text(
+                                _expenseReminderTime.format(context),
+                              ),
+                              trailing: const Icon(Icons.schedule),
+                              onTap: _pickExpenseReminderTime,
+                            ),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<int>(
+                              key: ValueKey(
+                                'expense-days-$_expenseReminderDaysBefore-${_selectedDate.millisecondsSinceEpoch}',
+                              ),
+                              initialValue: _expenseReminderDaysBefore,
+                              decoration: InputDecoration(
+                                labelText: strings.daysBefore,
+                              ),
+                              items: _expenseReminderDayOptions
+                                  .map(
+                                    (day) => DropdownMenuItem(
+                                      value: day,
+                                      child: Text(day.toString()),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(
+                                  () => _expenseReminderDaysBefore = value,
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: _expenseReminderMessageController,
+                              decoration: InputDecoration(
+                                labelText: strings.reminderMessage,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           ExpansionTile(
             initiallyExpanded: _recurrenceExpanded,
             onExpansionChanged: (expanded) {
