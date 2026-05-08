@@ -5,9 +5,11 @@ import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 
 class CurrentStatsScreen extends StatefulWidget {
@@ -18,6 +20,126 @@ class CurrentStatsScreen extends StatefulWidget {
 }
 
 class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
+  static const int _initialPage = 1200;
+  late final PageController _controller;
+  late DateTime _baseMonth;
+  late DateTime _currentMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _baseMonth = DateTime(now.year, now.month, 1);
+    _currentMonth = _baseMonth;
+    _controller = PageController(initialPage: _initialPage);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  DateTime _monthForIndex(int index) {
+    return addMonths(_baseMonth, index - _initialPage);
+  }
+
+  Future<void> _pickMonth() async {
+    final picked = await showMonthYearPicker(
+      context: context,
+      initialDate: _currentMonth,
+      firstDate: DateTime(2018, 1),
+      lastDate: DateTime(2100, 12),
+    );
+    if (picked != null) {
+      setState(() {
+        _baseMonth = DateTime(picked.year, picked.month, 1);
+        _currentMonth = _baseMonth;
+      });
+      _controller.jumpToPage(_initialPage);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
+    final state = context.watch<AppState>();
+    final locale = state.locale.toString();
+    final monthLabel = formatMonthYear(_currentMonth, locale);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${strings.currentStats} – $monthLabel'),
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: _pickMonth,
+                        borderRadius: BorderRadius.circular(24),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              Text(
+                                monthLabel,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.keyboard_arrow_down),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: PageView.builder(
+                controller: _controller,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentMonth = _monthForIndex(index);
+                  });
+                },
+                itemBuilder: (context, index) {
+                  final month = _monthForIndex(index);
+                  return _CurrentStatsPage(month: month);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrentStatsPage extends StatefulWidget {
+  const _CurrentStatsPage({required this.month});
+
+  final DateTime month;
+
+  @override
+  State<_CurrentStatsPage> createState() => _CurrentStatsPageState();
+}
+
+class _CurrentStatsPageState extends State<_CurrentStatsPage> {
   String? _selectedId;
 
   @override
@@ -26,9 +148,8 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final state = context.watch<AppState>();
     final locale = state.locale.toString();
     final currency = state.settings.currency;
-    final now = DateTime.now();
     final allocations = state
-        .expenseAllocationsForMonth(DateTime(now.year, now.month, 1))
+        .expenseAllocationsForMonth(widget.month)
         .where((allocation) => !allocation.expense.isRefunded)
         .where((allocation) => !allocation.expense.isIncome)
         .toList();
@@ -49,134 +170,131 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
     final selectedNet = selected?.totalNet ?? 0;
     final selectedAllocations = selected?.allocations ?? [];
 
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.currentStats)),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final breakdown = Column(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 900;
+          final breakdown = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                strings.categoryBreakdown,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: isWide ? 280 : 240,
+                child: _CategoryDonutChart(
+                  data: data,
+                  selectedId: selected?.id,
+                  onSelected: (id) => setState(() => _selectedId = id),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 10,
+                runSpacing: 6,
+                alignment: WrapAlignment.center,
+                children: data
+                    .map(
+                      (item) => _LegendDot(
+                        label: item.name,
+                        color: item.color,
+                        selected: item.id == selected?.id,
+                        onTap: () => setState(() => _selectedId = item.id),
+                      ),
+                    )
+                    .toList(),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 16,
+                runSpacing: 8,
+                children: [
+                  Text(
+                    '${strings.total}: ${formatCurrency(selectedTotal, currency, locale)}',
+                  ),
+                  Text(
+                    '${strings.percentage}: ${selectedPercent.toStringAsFixed(1)}%',
+                  ),
+                  Text(
+                    '${strings.net}: ${formatCurrency(selectedNet, currency, locale)}',
+                  ),
+                ],
+              ),
+            ],
+          );
+
+          if (data.isEmpty) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   strings.categoryBreakdown,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                SizedBox(
-                  height: isWide ? 280 : 240,
-                  child: _CategoryDonutChart(
-                    data: data,
-                    selectedId: selected?.id,
-                    onSelected: (id) => setState(() => _selectedId = id),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 6,
-                  alignment: WrapAlignment.center,
-                  children: data
-                      .map(
-                        (item) => _LegendDot(
-                          label: item.name,
-                          color: item.color,
-                          selected: item.id == selected?.id,
-                          onTap: () => setState(() => _selectedId = item.id),
-                        ),
-                      )
-                      .toList(),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  children: [
-                    Text(
-                      '${strings.total}: ${formatCurrency(selectedTotal, currency, locale)}',
-                    ),
-                    Text(
-                      '${strings.percentage}: ${selectedPercent.toStringAsFixed(1)}%',
-                    ),
-                    Text(
-                      '${strings.net}: ${formatCurrency(selectedNet, currency, locale)}',
-                    ),
-                  ],
-                ),
+                Center(child: Text(strings.noExpenses)),
               ],
             );
+          }
 
-            if (data.isEmpty) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    strings.categoryBreakdown,
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  Center(child: Text(strings.noExpenses)),
-                ],
-              );
-            }
-
-            final expenseList = selected == null
-                ? const SizedBox.shrink()
-                : ListView.separated(
-                    itemCount: selectedAllocations.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 8),
-                    itemBuilder: (context, index) {
-                      final allocation = selectedAllocations[index];
-                      final expense = allocation.expense;
-                      return Card(
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
+          final expenseList = selected == null
+              ? const SizedBox.shrink()
+              : ListView.separated(
+                  itemCount: selectedAllocations.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final allocation = selectedAllocations[index];
+                    final expense = allocation.expense;
+                    return Card(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                      ),
+                      child: ListTile(
+                        title: Text(expense.name),
+                        subtitle: Text(
+                          formatDateShort(allocation.date, locale),
+                        ),
+                        trailing: Text(
+                          formatCurrency(
+                            allocation.amount * -1,
+                            currency,
+                            locale,
                           ),
                         ),
-                        child: ListTile(
-                          title: Text(expense.name),
-                          subtitle: Text(
-                            formatDateShort(allocation.date, locale),
-                          ),
-                          trailing: Text(
-                            formatCurrency(
-                              allocation.amount * -1,
-                              currency,
-                              locale,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                      ),
+                    );
+                  },
+                );
 
-            if (isWide) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: breakdown),
-                  const SizedBox(width: 16),
-                  Expanded(child: expenseList),
-                ],
-              );
-            }
-
-            return Column(
+          if (isWide) {
+            return Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                breakdown,
-                const SizedBox(height: 16),
-                if (selected != null) Expanded(child: expenseList),
+                Expanded(child: breakdown),
+                const SizedBox(width: 16),
+                Expanded(child: expenseList),
               ],
             );
-          },
-        ),
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              breakdown,
+              const SizedBox(height: 16),
+              if (selected != null) Expanded(child: expenseList),
+            ],
+          );
+        },
       ),
     );
   }
