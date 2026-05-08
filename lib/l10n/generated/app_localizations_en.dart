@@ -361,4 +361,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get refresh => 'Refresh';
+
+  @override
+  String get budgets => 'Budgets';
+
+  @override
+  String get monthlyBudgets => 'Monthly budgets';
+
+  @override
+  String get annualBudgets => 'Annual budgets';
+
+  @override
+  String get addBudget => 'Add budget';
+
+  @override
+  String get editBudget => 'Edit budget';
+
+  @override
+  String get budgetTitle => 'Title';
+
+  @override
+  String get budgetDescription => 'Description';
+
+  @override
+  String get budgetAmount => 'Amount';
+
+  @override
+  String get budgetEnabled => 'Enabled';
+
+  @override
+  String get allCategories => 'All categories';
+
+  @override
+  String get selectCategories => 'Select categories';
+
+  @override
+  String get spent => 'Spent';
+
+  @override
+  String get remaining => 'Remaining';
+
+  @override
+  String get overBudget => 'Over budget';
+
+  @override
+  String get confirmDeleteBudget => 'Delete this budget?';
+
+  @override
+  String get noBudgets => 'No budgets yet.';
 }

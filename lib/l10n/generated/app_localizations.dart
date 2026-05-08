@@ -793,6 +793,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh'**
   String get refresh;
+
+  /// No description provided for @budgets.
+  String get budgets;
+
+  /// No description provided for @monthlyBudgets.
+  String get monthlyBudgets;
+
+  /// No description provided for @annualBudgets.
+  String get annualBudgets;
+
+  /// No description provided for @addBudget.
+  String get addBudget;
+
+  /// No description provided for @editBudget.
+  String get editBudget;
+
+  /// No description provided for @budgetTitle.
+  String get budgetTitle;
+
+  /// No description provided for @budgetDescription.
+  String get budgetDescription;
+
+  /// No description provided for @budgetAmount.
+  String get budgetAmount;
+
+  /// No description provided for @budgetEnabled.
+  String get budgetEnabled;
+
+  /// No description provided for @allCategories.
+  String get allCategories;
+
+  /// No description provided for @selectCategories.
+  String get selectCategories;
+
+  /// No description provided for @spent.
+  String get spent;
+
+  /// No description provided for @remaining.
+  String get remaining;
+
+  /// No description provided for @overBudget.
+  String get overBudget;
+
+  /// No description provided for @confirmDeleteBudget.
+  String get confirmDeleteBudget;
+
+  /// No description provided for @noBudgets.
+  String get noBudgets;
 }
 
 class _AppLocalizationsDelegate

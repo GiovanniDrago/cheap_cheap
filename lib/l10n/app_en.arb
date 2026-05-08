@@ -114,5 +114,21 @@
   "welcomeIntro": "Welcome to CheapCheap! Track your expenses and earn quests to level up. Each expense affects your stats and helps shape your progress.",
   "welcomeProfile": "Add your name to start progressing with quests. Quests will not advance until your profile has a name.",
   "nextQuestsIn": "Next quests in",
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "budgets": "Budgets",
+  "monthlyBudgets": "Monthly budgets",
+  "annualBudgets": "Annual budgets",
+  "addBudget": "Add budget",
+  "editBudget": "Edit budget",
+  "budgetTitle": "Title",
+  "budgetDescription": "Description",
+  "budgetAmount": "Amount",
+  "budgetEnabled": "Enabled",
+  "allCategories": "All categories",
+  "selectCategories": "Select categories",
+  "spent": "Spent",
+  "remaining": "Remaining",
+  "overBudget": "Over budget",
+  "confirmDeleteBudget": "Delete this budget?",
+  "noBudgets": "No budgets yet."
 }
