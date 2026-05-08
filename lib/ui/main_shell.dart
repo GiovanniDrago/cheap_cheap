@@ -1,4 +1,5 @@
 import 'package:cheapcheap/l10n/generated/app_localizations.dart';
+import 'package:cheapcheap/ui/budgets_screen.dart';
 import 'package:cheapcheap/ui/categories_screen.dart';
 import 'package:cheapcheap/ui/home_screen.dart';
 import 'package:cheapcheap/ui/profile_screen.dart';
@@ -55,6 +56,7 @@ class _MainShellState extends State<MainShell> {
     }
     final screens = [
       const HomeScreen(),
+      const BudgetsScreen(),
       const CategoriesScreen(),
       const ProfileScreen(),
       const SettingsScreen(),
@@ -70,6 +72,11 @@ class _MainShellState extends State<MainShell> {
             icon: const Icon(Icons.home_outlined),
             selectedIcon: const Icon(Icons.home),
             label: strings.home,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: const Icon(Icons.account_balance_wallet),
+            label: strings.budgets,
           ),
           NavigationDestination(
             icon: const Icon(Icons.category_outlined),
@@ -112,7 +119,7 @@ class _MainShellState extends State<MainShell> {
     );
 
     if (!context.mounted) return;
-    setState(() => _index = 2);
+    setState(() => _index = 3);
 
     if (!context.mounted) return;
     await showDialog<void>(

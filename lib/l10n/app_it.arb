@@ -114,5 +114,21 @@
   "welcomeIntro": "Benvenuto in CheapCheap! Traccia le spese e completa le quest per salire di livello. Ogni spesa influisce sulle statistiche e ti aiuta a progredire.",
   "welcomeProfile": "Aggiungi il tuo nome per iniziare a progredire con le quest. Le quest non avanzano finche il profilo non ha un nome.",
   "nextQuestsIn": "Prossime quest tra",
-  "refresh": "Aggiorna"
+  "refresh": "Aggiorna",
+  "budgets": "Budget",
+  "monthlyBudgets": "Budget mensili",
+  "annualBudgets": "Budget annuali",
+  "addBudget": "Aggiungi budget",
+  "editBudget": "Modifica budget",
+  "budgetTitle": "Titolo",
+  "budgetDescription": "Descrizione",
+  "budgetAmount": "Importo",
+  "budgetEnabled": "Abilitato",
+  "allCategories": "Tutte le categorie",
+  "selectCategories": "Seleziona categorie",
+  "spent": "Speso",
+  "remaining": "Rimanente",
+  "overBudget": "Over budget",
+  "confirmDeleteBudget": "Eliminare questo budget?",
+  "noBudgets": "Nessun budget."
 }

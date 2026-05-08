@@ -361,4 +361,52 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get refresh => 'Aggiorna';
+
+  @override
+  String get budgets => 'Budget';
+
+  @override
+  String get monthlyBudgets => 'Budget mensili';
+
+  @override
+  String get annualBudgets => 'Budget annuali';
+
+  @override
+  String get addBudget => 'Aggiungi budget';
+
+  @override
+  String get editBudget => 'Modifica budget';
+
+  @override
+  String get budgetTitle => 'Titolo';
+
+  @override
+  String get budgetDescription => 'Descrizione';
+
+  @override
+  String get budgetAmount => 'Importo';
+
+  @override
+  String get budgetEnabled => 'Abilitato';
+
+  @override
+  String get allCategories => 'Tutte le categorie';
+
+  @override
+  String get selectCategories => 'Seleziona categorie';
+
+  @override
+  String get spent => 'Speso';
+
+  @override
+  String get remaining => 'Rimanente';
+
+  @override
+  String get overBudget => 'Over budget';
+
+  @override
+  String get confirmDeleteBudget => 'Eliminare questo budget?';
+
+  @override
+  String get noBudgets => 'Nessun budget.';
 }

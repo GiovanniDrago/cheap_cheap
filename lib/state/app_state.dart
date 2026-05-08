@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cheapcheap/data/defaults.dart';
+import 'package:cheapcheap/models/budget.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/models/profile.dart';
@@ -22,6 +23,7 @@ class AppState extends ChangeNotifier {
 
   List<Category> categories = [];
   List<Expense> expenses = [];
+  List<Budget> budgets = [];
   Profile profile = Profile();
   Settings settings = Settings();
   Map<String, List<String>> questCompletions = {};
@@ -53,6 +55,13 @@ class AppState extends ChangeNotifier {
               .map((item) => Expense.fromJson(Map<String, dynamic>.from(item)))
               .toList();
     expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
+
+    final budgetList = _storage.readJsonList('budgets');
+    budgets = budgetList == null
+        ? _defaultBudgets()
+        : budgetList
+              .map((item) => Budget.fromJson(Map<String, dynamic>.from(item)))
+              .toList();
 
     final profileJson = _storage.readJson('profile');
     profile = profileJson == null ? Profile() : Profile.fromJson(profileJson);
@@ -97,6 +106,10 @@ class AppState extends ChangeNotifier {
     await _storage.writeJsonList(
       'expenses',
       expenses.map((expense) => expense.toJson()).toList(),
+    );
+    await _storage.writeJsonList(
+      'budgets',
+      budgets.map((budget) => budget.toJson()).toList(),
     );
     await _storage.writeJson('profile', profile.toJson());
     await _storage.writeJson('settings', settings.toJson());
@@ -209,6 +222,96 @@ class AppState extends ChangeNotifier {
       (category) => category.id == id,
       orElse: () => categories.first,
     );
+  }
+
+  List<Budget> _defaultBudgets() {
+    return [
+      Budget(
+        id: 'budget_month_default',
+        title: 'Month budget',
+        description: '',
+        amount: 0,
+        isEnabled: false,
+        period: BudgetPeriod.monthly,
+        categoryIds: [],
+        isDefault: true,
+      ),
+      Budget(
+        id: 'budget_annual_default',
+        title: 'Annual budget',
+        description: '',
+        amount: 0,
+        isEnabled: false,
+        period: BudgetPeriod.annual,
+        categoryIds: [],
+        isDefault: true,
+      ),
+    ];
+  }
+
+  void addBudget(Budget budget) {
+    budgets = [...budgets, budget];
+    _persist();
+    notifyListeners();
+  }
+
+  void updateBudget(Budget budget) {
+    budgets = budgets
+        .map((existing) => existing.id == budget.id ? budget : existing)
+        .toList();
+    _persist();
+    notifyListeners();
+  }
+
+  void removeBudget(String id) {
+    budgets = budgets.where((budget) => budget.id != id).toList();
+    _persist();
+    notifyListeners();
+  }
+
+  void toggleBudgetEnabled(String id, bool enabled) {
+    budgets = budgets.map((budget) {
+      if (budget.id == id) {
+        return budget.copyWith(isEnabled: enabled);
+      }
+      return budget;
+    }).toList();
+    _persist();
+    notifyListeners();
+  }
+
+  double calculateBudgetSpent(Budget budget) {
+    if (budget.period == BudgetPeriod.monthly) {
+      final now = DateTime.now();
+      final month = DateTime(now.year, now.month, 1);
+      final allocations = expenseAllocationsForMonth(month)
+          .where((a) => !a.expense.isRefunded)
+          .where((a) => !a.expense.isIncome);
+      return _sumAllocations(allocations, budget.categoryIds);
+    } else {
+      final now = DateTime.now();
+      var total = 0.0;
+      for (var m = 1; m <= 12; m++) {
+        final month = DateTime(now.year, m, 1);
+        final allocations = expenseAllocationsForMonth(month)
+            .where((a) => !a.expense.isRefunded)
+            .where((a) => !a.expense.isIncome);
+        total += _sumAllocations(allocations, budget.categoryIds);
+      }
+      return total;
+    }
+  }
+
+  double _sumAllocations(
+    Iterable<ExpenseAllocation> allocations,
+    List<String> categoryIds,
+  ) {
+    if (categoryIds.isEmpty) {
+      return allocations.fold(0, (sum, a) => sum + a.amount);
+    }
+    return allocations
+        .where((a) => categoryIds.contains(a.expense.categoryId))
+        .fold(0, (sum, a) => sum + a.amount);
   }
 
   Future<NotificationScheduleStatus?> addExpense(Expense expense) async {
