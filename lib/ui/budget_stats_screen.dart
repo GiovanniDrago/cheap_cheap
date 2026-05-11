@@ -92,15 +92,22 @@ class _BudgetStatsScreenState extends State<BudgetStatsScreen> {
 
     final isDrillDown = _drillDownCategoryId != null;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.budget.title} \u2013 ${strings.budgetStats}'),
-        leading: isDrillDown
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: _backToCategories,
-              )
-            : null,
+    return PopScope(
+      canPop: !isDrillDown,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && isDrillDown) {
+          _backToCategories();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('${widget.budget.title} \u2013 ${strings.budgetStats}'),
+          leading: isDrillDown
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _backToCategories,
+                )
+              : null,
         actions: [
           IconButton(
             icon: Icon(
@@ -221,7 +228,8 @@ class _BudgetStatsScreenState extends State<BudgetStatsScreen> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 
   List<_ChartItem> _buildItems(
