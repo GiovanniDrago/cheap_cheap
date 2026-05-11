@@ -1,5 +1,7 @@
+import 'package:cheapcheap/models/budget.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
+import 'package:cheapcheap/ui/budget_stats_screen.dart';
 import 'package:cheapcheap/ui/category_form_screen.dart';
 import 'package:cheapcheap/ui/current_stats_screen.dart';
 import 'package:cheapcheap/ui/expense_detail_screen.dart';
@@ -10,6 +12,7 @@ import 'package:flutter/material.dart';
 final class AppRoutes {
   static const monthlyStats = '/monthly-stats';
   static const currentStats = '/current-stats';
+  static const budgetStats = '/budget-stats';
 }
 
 final class AppRouter {
@@ -25,6 +28,12 @@ final class AppRouter {
           builder: (_) => const CurrentStatsScreen(),
           settings: settings,
         );
+      case AppRoutes.budgetStats:
+        final budget = settings.arguments as Budget;
+        return _materialRoute(
+          builder: (_) => BudgetStatsScreen(budget: budget),
+          settings: settings,
+        );
       default:
         throw StateError('Unknown route: ${settings.name}');
     }
@@ -36,6 +45,16 @@ final class AppRouter {
 
   static Future<void> showCurrentStats(BuildContext context) {
     return Navigator.of(context).pushNamed(AppRoutes.currentStats);
+  }
+
+  static Future<void> showBudgetStats(
+    BuildContext context, {
+    required Budget budget,
+  }) {
+    return Navigator.of(context).pushNamed(
+      AppRoutes.budgetStats,
+      arguments: budget,
+    );
   }
 
   static Future<void> showExpenseForm(

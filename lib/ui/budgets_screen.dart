@@ -2,6 +2,7 @@ import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/budget.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/stat_key.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
@@ -223,6 +224,11 @@ class _BudgetCard extends StatelessWidget {
                             ),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.pie_chart_outline),
+                      onPressed: () => AppRouter.showBudgetStats(context, budget: budget),
+                      tooltip: strings.budgetStats,
                     ),
                     Switch(
                       value: budget.isEnabled,
