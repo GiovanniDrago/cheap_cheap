@@ -24,18 +24,16 @@ class _BudgetStatsScreenState extends State<BudgetStatsScreen> {
   late bool _sortAscending;
   String? _selectedId;
   String? _drillDownCategoryId;
-
-  @override
-  void initState() {
-    super.initState();
-    _sortAscending = false;
-  }
+  bool _initialized = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final state = context.read<AppState>();
-    _sortAscending = state.settings.budgetSortAscending;
+    if (!_initialized) {
+      final state = context.read<AppState>();
+      _sortAscending = state.settings.budgetSortAscending;
+      _initialized = true;
+    }
   }
 
   void _toggleSort() {
