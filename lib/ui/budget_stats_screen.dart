@@ -231,10 +231,14 @@ class _BudgetStatsScreenState extends State<BudgetStatsScreen> {
   ) {
     final Map<String, _ChartItem> stats = {};
     final bool expenseMode = _isExpenseMode;
+    final drillDownId = _drillDownCategoryId;
 
     for (final allocation in allocations) {
       final expense = allocation.expense;
       if (expenseMode) {
+        if (drillDownId != null && expense.categoryId != drillDownId) {
+          continue;
+        }
         final id = expense.id;
         final name = expense.name;
         final color = _expenseColor(id, name);

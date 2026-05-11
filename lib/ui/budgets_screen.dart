@@ -193,7 +193,6 @@ class _BudgetCard extends StatelessWidget {
           side: BorderSide(color: theme.colorScheme.outlineVariant),
         ),
         child: InkWell(
-          onTap: onTap,
           onLongPress: onLongPress,
           borderRadius: BorderRadius.circular(16),
           child: Padding(
@@ -224,6 +223,11 @@ class _BudgetCard extends StatelessWidget {
                             ),
                         ],
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: onTap,
+                      tooltip: strings.editBudget,
                     ),
                     IconButton(
                       icon: const Icon(Icons.pie_chart_outline),
