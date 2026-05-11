@@ -363,6 +363,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get refresh => 'Aggiorna';
 
   @override
+  String get budgetStats => 'Statistiche budget';
+
+  @override
   String get budgets => 'Budget';
 
   @override
@@ -388,6 +391,21 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get budgetEnabled => 'Abilitato';
+
+  @override
+  String get defaultBudgetSortOrder => 'Ordinamento budget predefinito';
+
+  @override
+  String get sortAscending => 'Crescente';
+
+  @override
+  String get sortDescending => 'Decrescente';
+
+  @override
+  String get expenses => 'Spese';
+
+  @override
+  String get back => 'Indietro';
 
   @override
   String get allCategories => 'Tutte le categorie';

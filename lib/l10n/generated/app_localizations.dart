@@ -794,52 +794,136 @@ abstract class AppLocalizations {
   /// **'Refresh'**
   String get refresh;
 
+  /// No description provided for @budgetStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget stats'**
+  String get budgetStats;
+
   /// No description provided for @budgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets'**
   String get budgets;
 
   /// No description provided for @monthlyBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly budgets'**
   String get monthlyBudgets;
 
   /// No description provided for @annualBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Annual budgets'**
   String get annualBudgets;
 
   /// No description provided for @addBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Add budget'**
   String get addBudget;
 
   /// No description provided for @editBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit budget'**
   String get editBudget;
 
   /// No description provided for @budgetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
   String get budgetTitle;
 
   /// No description provided for @budgetDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
   String get budgetDescription;
 
   /// No description provided for @budgetAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
   String get budgetAmount;
 
   /// No description provided for @budgetEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
   String get budgetEnabled;
 
+  /// No description provided for @defaultBudgetSortOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Default budget sort order'**
+  String get defaultBudgetSortOrder;
+
+  /// No description provided for @sortAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get sortAscending;
+
+  /// No description provided for @sortDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get sortDescending;
+
+  /// No description provided for @expenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses'**
+  String get expenses;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
   /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
   String get allCategories;
 
   /// No description provided for @selectCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Select categories'**
   String get selectCategories;
 
   /// No description provided for @spent.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent'**
   String get spent;
 
   /// No description provided for @remaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
   String get remaining;
 
   /// No description provided for @overBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget'**
   String get overBudget;
 
   /// No description provided for @confirmDeleteBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this budget?'**
   String get confirmDeleteBudget;
 
   /// No description provided for @noBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets yet.'**
   String get noBudgets;
 }
 

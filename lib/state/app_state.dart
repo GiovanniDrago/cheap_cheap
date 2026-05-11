@@ -144,6 +144,12 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateBudgetSortAscending(bool ascending) {
+    settings = settings.copyWith(budgetSortAscending: ascending);
+    _persist();
+    notifyListeners();
+  }
+
   void markWelcomeSeen() {
     settings = settings.copyWith(hasSeenWelcome: true);
     _persist();
@@ -300,6 +306,39 @@ class AppState extends ChangeNotifier {
       }
       return total;
     }
+  }
+
+  List<ExpenseAllocation> budgetAllocations(Budget budget) {
+    if (budget.period == BudgetPeriod.monthly) {
+      final now = DateTime.now();
+      final month = DateTime(now.year, now.month, 1);
+      final allocations = expenseAllocationsForMonth(month)
+          .where((a) => !a.expense.isRefunded)
+          .where((a) => !a.expense.isIncome);
+      return _filterAllocations(allocations, budget.categoryIds).toList();
+    } else {
+      final now = DateTime.now();
+      final List<ExpenseAllocation> result = [];
+      for (var m = 1; m <= 12; m++) {
+        final month = DateTime(now.year, m, 1);
+        final allocations = expenseAllocationsForMonth(month)
+            .where((a) => !a.expense.isRefunded)
+            .where((a) => !a.expense.isIncome);
+        result.addAll(_filterAllocations(allocations, budget.categoryIds));
+      }
+      return result;
+    }
+  }
+
+  Iterable<ExpenseAllocation> _filterAllocations(
+    Iterable<ExpenseAllocation> allocations,
+    List<String> categoryIds,
+  ) {
+    if (categoryIds.isEmpty) {
+      return allocations;
+    }
+    return allocations
+        .where((a) => categoryIds.contains(a.expense.categoryId));
   }
 
   double _sumAllocations(

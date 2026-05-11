@@ -97,6 +97,20 @@ class SettingsScreen extends StatelessWidget {
               state.updateCurrency(value);
             },
           ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<bool>(
+            key: ValueKey('budget-sort-${state.settings.budgetSortAscending}'),
+            initialValue: state.settings.budgetSortAscending,
+            decoration: InputDecoration(labelText: strings.defaultBudgetSortOrder),
+            items: [
+              DropdownMenuItem(value: false, child: Text(strings.sortDescending)),
+              DropdownMenuItem(value: true, child: Text(strings.sortAscending)),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              state.updateBudgetSortAscending(value);
+            },
+          ),
           const SizedBox(height: 24),
           Text(strings.data, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),

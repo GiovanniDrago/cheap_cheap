@@ -7,6 +7,7 @@ class Settings {
     this.localeCode = 'en',
     this.currency = 'EUR',
     this.hasSeenWelcome = false,
+    this.budgetSortAscending = false,
     List<Reminder>? reminders,
   }) : reminders = reminders ?? [];
 
@@ -15,6 +16,7 @@ class Settings {
   final String localeCode;
   final String currency;
   final bool hasSeenWelcome;
+  final bool budgetSortAscending;
   final List<Reminder> reminders;
 
   Settings copyWith({
@@ -23,6 +25,7 @@ class Settings {
     String? localeCode,
     String? currency,
     bool? hasSeenWelcome,
+    bool? budgetSortAscending,
     List<Reminder>? reminders,
   }) {
     return Settings(
@@ -31,6 +34,7 @@ class Settings {
       localeCode: localeCode ?? this.localeCode,
       currency: currency ?? this.currency,
       hasSeenWelcome: hasSeenWelcome ?? this.hasSeenWelcome,
+      budgetSortAscending: budgetSortAscending ?? this.budgetSortAscending,
       reminders: reminders ?? this.reminders,
     );
   }
@@ -42,6 +46,7 @@ class Settings {
       'localeCode': localeCode,
       'currency': currency,
       'hasSeenWelcome': hasSeenWelcome,
+      'budgetSortAscending': budgetSortAscending,
       'reminders': reminders.map((reminder) => reminder.toJson()).toList(),
     };
   }
@@ -53,6 +58,7 @@ class Settings {
       localeCode: json['localeCode'] as String? ?? 'en',
       currency: json['currency'] as String? ?? 'EUR',
       hasSeenWelcome: json['hasSeenWelcome'] as bool? ?? false,
+      budgetSortAscending: json['budgetSortAscending'] as bool? ?? false,
       reminders: (json['reminders'] as List<dynamic>? ?? [])
           .map((item) => Reminder.fromJson(Map<String, dynamic>.from(item)))
           .toList(),
