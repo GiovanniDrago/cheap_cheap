@@ -170,17 +170,24 @@ class _BudgetStatsScreenState extends State<BudgetStatsScreen> {
                         final percent = total == 0
                             ? 0.0
                             : (item.total / total) * 100;
+                        final isItemSelected = item.id == selected?.id;
                         return Card(
                           elevation: 0,
+                          color: isItemSelected
+                              ? item.color.withValues(alpha: 0.08)
+                              : null,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                             side: BorderSide(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .outlineVariant,
+                              color: isItemSelected
+                                  ? item.color.withValues(alpha: 0.6)
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant,
                             ),
                           ),
                           child: ListTile(
+                            onTap: () => _selectItem(item.id),
                             leading: Container(
                               width: 12,
                               height: 12,
