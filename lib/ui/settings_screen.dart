@@ -5,6 +5,7 @@ import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/models/reminder.dart';
 import 'package:cheapcheap/services/notification_service.dart';
+import 'package:cheapcheap/services/update_service.dart';
 import 'package:cheapcheap/state/app_state.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
@@ -111,6 +112,46 @@ class SettingsScreen extends StatelessWidget {
               state.updateBudgetSortAscending(value);
             },
           ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            key: ValueKey('date-format-${state.settings.dateFormat}'),
+            initialValue: state.settings.dateFormat,
+            decoration: InputDecoration(labelText: strings.dateFormat),
+            items: [
+              DropdownMenuItem(
+                value: 'dd/MM/yyyy',
+                child: Text(strings.dateFormatDayMonthYear),
+              ),
+              DropdownMenuItem(
+                value: 'MM/dd/yyyy',
+                child: Text(strings.dateFormatMonthDayYear),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              state.updateDateFormat(value);
+            },
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            key: ValueKey('week-start-${state.settings.weekStart}'),
+            initialValue: state.settings.weekStart,
+            decoration: InputDecoration(labelText: strings.weekStart),
+            items: [
+              DropdownMenuItem(
+                value: 'monday',
+                child: Text(strings.weekStartMonday),
+              ),
+              DropdownMenuItem(
+                value: 'sunday',
+                child: Text(strings.weekStartSunday),
+              ),
+            ],
+            onChanged: (value) {
+              if (value == null) return;
+              state.updateWeekStart(value);
+            },
+          ),
           const SizedBox(height: 24),
           Text(strings.data, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
@@ -160,6 +201,28 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () => _openReminderDialog(context),
             icon: const Icon(Icons.add),
             label: Text(strings.addReminder),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            strings.version,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            leading: const Icon(Icons.system_update),
+            title: Text(strings.checkForUpdates),
+            onTap: () => UpdateService.check(context, silent: false),
+          ),
+          FutureBuilder<String>(
+            future: UpdateService.currentVersion,
+            builder: (context, snapshot) {
+              final version = snapshot.data ?? '';
+              return ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(strings.version),
+                subtitle: version.isNotEmpty ? Text('v$version') : null,
+              );
+            },
           ),
         ],
       ),
@@ -253,21 +316,7 @@ class SettingsScreen extends StatelessWidget {
                           decoration: InputDecoration(
                             labelText: strings.weekday,
                           ),
-                          items: List.generate(7, (index) => index + 1)
-                              .map(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(
-                                    DateFormat(
-                                      'EEEE',
-                                      Localizations.localeOf(
-                                        context,
-                                      ).toString(),
-                                    ).format(DateTime(2023, 1, value + 1)),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                          items: _weekdayItems(context),
                           onChanged: (value) {
                             if (value == null) return;
                             setState(() => weekday = value);
@@ -648,6 +697,26 @@ class SettingsScreen extends StatelessWidget {
 
   Future<Directory> _getExportDirectory() async {
     return await getApplicationDocumentsDirectory();
+  }
+
+  List<DropdownMenuItem<int>> _weekdayItems(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
+    final weekStart = context.read<AppState>().settings.weekStart;
+    final values = List.generate(7, (index) => index + 1);
+    if (weekStart == 'sunday') {
+      final sunday = values.removeAt(6);
+      values.insert(0, sunday);
+    }
+    return values
+        .map(
+          (value) => DropdownMenuItem(
+            value: value,
+            child: Text(
+              DateFormat('EEEE', locale).format(DateTime(2023, 1, value + 1)),
+            ),
+          ),
+        )
+        .toList();
   }
 
   List<String> _themeLabels(AppLocalizations strings) {

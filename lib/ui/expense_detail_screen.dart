@@ -117,7 +117,8 @@ class _ExpenseDetailScreenState extends State<ExpenseDetailScreen> {
   void _syncDateController() {
     final locale = _localeCode;
     if (locale == null) return;
-    _dateController.text = formatDateField(_selectedDate, locale);
+    final dateFormat = context.read<AppState>().settings.dateFormat;
+    _dateController.text = formatDateField(_selectedDate, locale, dateFormat: dateFormat);
   }
 
   bool _hasChanges() {

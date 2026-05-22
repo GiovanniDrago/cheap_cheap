@@ -136,5 +136,18 @@
   "remaining": "Remaining",
   "overBudget": "Over budget",
   "confirmDeleteBudget": "Delete this budget?",
+  "dateFormat": "Date format",
+  "dateFormatDayMonthYear": "Day/Month/Year",
+  "dateFormatMonthDayYear": "Month/Day/Year",
+  "weekStart": "Week start",
+  "weekStartMonday": "Monday",
+  "weekStartSunday": "Sunday",
+  "checkForUpdates": "Check for updates",
+  "updateAvailable": "Update available",
+  "noUpdates": "No updates available",
+  "download": "Download",
+  "later": "Later",
+  "updateError": "Could not check for updates",
+  "version": "Version",
   "noBudgets": "No budgets yet."
 }

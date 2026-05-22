@@ -426,5 +426,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmDeleteBudget => 'Delete this budget?';
 
   @override
+  String get dateFormat => 'Date format';
+
+  @override
+  String get dateFormatDayMonthYear => 'Day/Month/Year';
+
+  @override
+  String get dateFormatMonthDayYear => 'Month/Day/Year';
+
+  @override
+  String get weekStart => 'Week start';
+
+  @override
+  String get weekStartMonday => 'Monday';
+
+  @override
+  String get weekStartSunday => 'Sunday';
+
+  @override
+  String get checkForUpdates => 'Check for updates';
+
+  @override
+  String get updateAvailable => 'Update available';
+
+  @override
+  String get noUpdates => 'No updates available';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get later => 'Later';
+
+  @override
+  String get updateError => 'Could not check for updates';
+
+  @override
+  String get version => 'Version';
+
+  @override
   String get noBudgets => 'No budgets yet.';
 }

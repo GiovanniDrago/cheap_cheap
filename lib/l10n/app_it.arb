@@ -136,5 +136,18 @@
   "remaining": "Rimanente",
   "overBudget": "Over budget",
   "confirmDeleteBudget": "Eliminare questo budget?",
+  "dateFormat": "Formato data",
+  "dateFormatDayMonthYear": "Giorno/Mese/Anno",
+  "dateFormatMonthDayYear": "Mese/Giorno/Anno",
+  "weekStart": "Inizio settimana",
+  "weekStartMonday": "Lunedi",
+  "weekStartSunday": "Domenica",
+  "checkForUpdates": "Controlla aggiornamenti",
+  "updateAvailable": "Aggiornamento disponibile",
+  "noUpdates": "Nessun aggiornamento disponibile",
+  "download": "Scarica",
+  "later": "Piu tardi",
+  "updateError": "Impossibile controllare gli aggiornamenti",
+  "version": "Versione",
   "noBudgets": "Nessun budget."
 }

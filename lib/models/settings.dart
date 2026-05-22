@@ -8,6 +8,8 @@ class Settings {
     this.currency = 'EUR',
     this.hasSeenWelcome = false,
     this.budgetSortAscending = false,
+    this.dateFormat = 'dd/MM/yyyy',
+    this.weekStart = 'monday',
     List<Reminder>? reminders,
   }) : reminders = reminders ?? [];
 
@@ -17,6 +19,8 @@ class Settings {
   final String currency;
   final bool hasSeenWelcome;
   final bool budgetSortAscending;
+  final String dateFormat;
+  final String weekStart;
   final List<Reminder> reminders;
 
   Settings copyWith({
@@ -26,6 +30,8 @@ class Settings {
     String? currency,
     bool? hasSeenWelcome,
     bool? budgetSortAscending,
+    String? dateFormat,
+    String? weekStart,
     List<Reminder>? reminders,
   }) {
     return Settings(
@@ -35,6 +41,8 @@ class Settings {
       currency: currency ?? this.currency,
       hasSeenWelcome: hasSeenWelcome ?? this.hasSeenWelcome,
       budgetSortAscending: budgetSortAscending ?? this.budgetSortAscending,
+      dateFormat: dateFormat ?? this.dateFormat,
+      weekStart: weekStart ?? this.weekStart,
       reminders: reminders ?? this.reminders,
     );
   }
@@ -47,6 +55,8 @@ class Settings {
       'currency': currency,
       'hasSeenWelcome': hasSeenWelcome,
       'budgetSortAscending': budgetSortAscending,
+      'dateFormat': dateFormat,
+      'weekStart': weekStart,
       'reminders': reminders.map((reminder) => reminder.toJson()).toList(),
     };
   }
@@ -59,6 +69,8 @@ class Settings {
       currency: json['currency'] as String? ?? 'EUR',
       hasSeenWelcome: json['hasSeenWelcome'] as bool? ?? false,
       budgetSortAscending: json['budgetSortAscending'] as bool? ?? false,
+      dateFormat: json['dateFormat'] as String? ?? 'dd/MM/yyyy',
+      weekStart: json['weekStart'] as String? ?? 'monday',
       reminders: (json['reminders'] as List<dynamic>? ?? [])
           .map((item) => Reminder.fromJson(Map<String, dynamic>.from(item)))
           .toList(),

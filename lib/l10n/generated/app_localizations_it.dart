@@ -426,5 +426,44 @@ class AppLocalizationsIt extends AppLocalizations {
   String get confirmDeleteBudget => 'Eliminare questo budget?';
 
   @override
+  String get dateFormat => 'Formato data';
+
+  @override
+  String get dateFormatDayMonthYear => 'Giorno/Mese/Anno';
+
+  @override
+  String get dateFormatMonthDayYear => 'Mese/Giorno/Anno';
+
+  @override
+  String get weekStart => 'Inizio settimana';
+
+  @override
+  String get weekStartMonday => 'Lunedi';
+
+  @override
+  String get weekStartSunday => 'Domenica';
+
+  @override
+  String get checkForUpdates => 'Controlla aggiornamenti';
+
+  @override
+  String get updateAvailable => 'Aggiornamento disponibile';
+
+  @override
+  String get noUpdates => 'Nessun aggiornamento disponibile';
+
+  @override
+  String get download => 'Scarica';
+
+  @override
+  String get later => 'Piu tardi';
+
+  @override
+  String get updateError => 'Impossibile controllare gli aggiornamenti';
+
+  @override
+  String get version => 'Versione';
+
+  @override
   String get noBudgets => 'Nessun budget.';
 }

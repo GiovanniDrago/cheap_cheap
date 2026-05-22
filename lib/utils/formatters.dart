@@ -5,7 +5,10 @@ double parseAmount(String value) {
   return double.tryParse(normalized) ?? 0;
 }
 
-String formatDateField(DateTime date, String locale) {
+String formatDateField(DateTime date, String locale, {String? dateFormat}) {
+  if (dateFormat != null && dateFormat.isNotEmpty) {
+    return DateFormat(dateFormat, locale).format(date);
+  }
   return DateFormat.yMd(locale).format(date);
 }
 

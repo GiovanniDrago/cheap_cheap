@@ -150,6 +150,18 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void updateDateFormat(String format) {
+    settings = settings.copyWith(dateFormat: format);
+    _persist();
+    notifyListeners();
+  }
+
+  void updateWeekStart(String start) {
+    settings = settings.copyWith(weekStart: start);
+    _persist();
+    notifyListeners();
+  }
+
   void markWelcomeSeen() {
     settings = settings.copyWith(hasSeenWelcome: true);
     _persist();

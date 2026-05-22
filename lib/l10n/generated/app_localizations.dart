@@ -920,6 +920,84 @@ abstract class AppLocalizations {
   /// **'Delete this budget?'**
   String get confirmDeleteBudget;
 
+  /// No description provided for @dateFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Date format'**
+  String get dateFormat;
+
+  /// No description provided for @dateFormatDayMonthYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Day/Month/Year'**
+  String get dateFormatDayMonthYear;
+
+  /// No description provided for @dateFormatMonthDayYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Month/Day/Year'**
+  String get dateFormatMonthDayYear;
+
+  /// No description provided for @weekStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Week start'**
+  String get weekStart;
+
+  /// No description provided for @weekStartMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get weekStartMonday;
+
+  /// No description provided for @weekStartSunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get weekStartSunday;
+
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get checkForUpdates;
+
+  /// No description provided for @updateAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailable;
+
+  /// No description provided for @noUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'No updates available'**
+  String get noUpdates;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @later.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get later;
+
+  /// No description provided for @updateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check for updates'**
+  String get updateError;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
   /// No description provided for @noBudgets.
   ///
   /// In en, this message translates to:
