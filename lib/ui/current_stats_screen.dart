@@ -45,11 +45,13 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
   }
 
   Future<void> _pickMonth() async {
+    final state = context.read<AppState>();
     final picked = await showMonthYearPicker(
       context: context,
       initialDate: _currentMonth,
       firstDate: DateTime(2018, 1),
       lastDate: DateTime(2100, 12),
+      locale: pickerLocale(state.locale, state.settings.weekStart),
     );
     if (picked != null) {
       setState(() {

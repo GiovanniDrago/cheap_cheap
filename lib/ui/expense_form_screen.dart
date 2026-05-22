@@ -97,11 +97,13 @@ class _ExpenseFormScreenState extends State<ExpenseFormScreen> {
   }
 
   Future<void> _pickDate() async {
+    final state = context.read<AppState>();
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2018, 1),
       lastDate: DateTime(2100, 12),
+      locale: pickerLocale(state.locale, state.settings.weekStart),
     );
     if (picked != null) {
       setState(() {

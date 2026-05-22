@@ -43,11 +43,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pickMonth() async {
+    final state = context.read<AppState>();
     final picked = await showMonthYearPicker(
       context: context,
       initialDate: _currentMonth,
       firstDate: DateTime(2018, 1),
       lastDate: DateTime(2100, 12),
+      locale: pickerLocale(state.locale, state.settings.weekStart),
     );
     if (picked != null) {
       setState(() {
@@ -125,11 +127,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         IconButton(
                           icon: const Icon(Icons.calendar_today),
                           onPressed: () async {
+                            final state = context.read<AppState>();
                             final picked = await showDatePicker(
                               context: context,
                               initialDate: date,
                               firstDate: DateTime(2018, 1),
                               lastDate: DateTime(2100, 12),
+                              locale: pickerLocale(state.locale, state.settings.weekStart),
                             );
                             if (picked != null) {
                               setState(() => date = picked);
