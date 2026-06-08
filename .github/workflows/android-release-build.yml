@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  REPRO_BUILD_DIR: /home/vagrant/build/com.takasu.cheapcheap
+  REPRO_BUILD_DIR: /home/runner/build/com.takasu.cheapcheap
 
 jobs:
   build-android-publish:
@@ -55,13 +55,13 @@ jobs:
 
       - name: Prepare reproducible workspace
         run: |
-          sudo mkdir -p "$REPRO_BUILD_DIR"
-          sudo chown -R "$USER":"$USER" /home/vagrant
+          mkdir -p "$REPRO_BUILD_DIR"
           rsync -a --delete --exclude .git ./ "$REPRO_BUILD_DIR/"
 
       - name: Build release APKs
         working-directory: ${{ env.REPRO_BUILD_DIR }}
         run: |
+          flutter pub get
           flutter build apk --release --split-per-abi \
             --build-name "$APP_VERSION" \
             --build-number "$BUILD_NUMBER"
