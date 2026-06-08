@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.api.ApkVariantOutputImpl
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -17,7 +18,6 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.takasu.cheapcheap"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -57,6 +57,24 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+    }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+}
+
+val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86_64" to 3)
+
+android.applicationVariants.all { variant ->
+    variant.outputs.all {
+        val apkOutput = this as? ApkVariantOutputImpl ?: return@all
+        val abiFilter = apkOutput.filters.find { it.filterType == "ABI" }
+        val abiVersionCode = abiCodes[abiFilter?.identifier]
+        if (abiVersionCode != null) {
+            apkOutput.versionCodeOverride = variant.versionCode * 10 + abiVersionCode
         }
     }
 }

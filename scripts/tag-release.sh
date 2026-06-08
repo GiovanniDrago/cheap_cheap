@@ -24,7 +24,10 @@ if ! grep -q "^version:" pubspec.yaml; then
   exit 1
 fi
 
-sed -i.bak -E "s/^version: .*/version: ${version}/" pubspec.yaml
+IFS='.' read -r major minor patch <<< "$version"
+build_number=$((10#$major * 10000 + 10#$minor * 100 + 10#$patch))
+
+sed -i.bak -E "s/^version: .*/version: ${version}+${build_number}/" pubspec.yaml
 rm -f pubspec.yaml.bak
 
 git add pubspec.yaml

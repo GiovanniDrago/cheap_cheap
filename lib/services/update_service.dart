@@ -120,11 +120,15 @@ class UpdateService {
             onPressed: () => Navigator.pop(context),
             child: Text(l10n.later),
           ),
-          FilledButton(
+            FilledButton(
             onPressed: () async {
               final uri = Uri.parse(release.downloadUrl);
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                if (context.mounted) {
+                  _showSnack(context, AppLocalizations.of(context)!.updateError);
+                }
               }
               if (context.mounted) Navigator.pop(context);
             },
