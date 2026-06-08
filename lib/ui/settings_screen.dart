@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -156,9 +157,15 @@ class SettingsScreen extends StatelessWidget {
           Text(strings.data, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
           OutlinedButton.icon(
-            onPressed: () => _exportCsv(context),
-            icon: const Icon(Icons.download),
-            label: Text(strings.exportCsv),
+            onPressed: () => _exportToDownloads(context),
+            icon: const Icon(Icons.folder),
+            label: Text(strings.exportToDownloads),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _shareCsv(context),
+            icon: const Icon(Icons.share),
+            label: Text(strings.exportShare),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -537,17 +544,30 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _exportCsv(BuildContext context) async {
+  Future<void> _exportToDownloads(BuildContext context) async {
     final state = context.read<AppState>();
     final messenger = ScaffoldMessenger.of(context);
     final strings = AppLocalizations.of(context)!;
     final csv = _buildCsv(state);
-    final directory = await _getExportDirectory();
+    final directory = await getDownloadsDirectory() ??
+        await getApplicationDocumentsDirectory();
     final file = File('${directory.path}/cheapcheap_export.csv');
     await file.writeAsString(csv);
     if (!context.mounted) return;
     messenger.showSnackBar(
-      SnackBar(content: Text('${strings.csvExported} ${file.path}')),
+      SnackBar(content: Text('${strings.csvExportedToDownloads} ${file.path}')),
+    );
+  }
+
+  Future<void> _shareCsv(BuildContext context) async {
+    final state = context.read<AppState>();
+    final csv = _buildCsv(state);
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/cheapcheap_export.csv');
+    await file.writeAsString(csv);
+    await Share.shareXFiles(
+      [XFile(file.path, mimeType: 'text/csv')],
+      subject: 'CheapCheap Export',
     );
   }
 
@@ -693,10 +713,6 @@ class SettingsScreen extends StatelessWidget {
           : 1,
       reminderMessage: row.length > 18 ? row[18].toString() : '',
     );
-  }
-
-  Future<Directory> _getExportDirectory() async {
-    return await getApplicationDocumentsDirectory();
   }
 
   List<DropdownMenuItem<int>> _weekdayItems(BuildContext context) {

@@ -494,6 +494,24 @@ abstract class AppLocalizations {
   /// **'CSV exported to'**
   String get csvExported;
 
+  /// No description provided for @csvExportedToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV exported to Downloads'**
+  String get csvExportedToDownloads;
+
+  /// No description provided for @exportToDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Export to Downloads'**
+  String get exportToDownloads;
+
+  /// No description provided for @exportShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share export'**
+  String get exportShare;
+
   /// No description provided for @csvImported.
   ///
   /// In en, this message translates to:
