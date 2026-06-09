@@ -68,9 +68,9 @@ android {
 
 val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86_64" to 3)
 
-android.applicationVariants.all { variant ->
-    variant.outputs.all {
-        val apkOutput = this as? ApkVariantOutputImpl ?: return@all
+android.applicationVariants.configureEach { variant ->
+    variant.outputs.configureEach {
+        val apkOutput = this as? ApkVariantOutputImpl ?: return@configureEach
         val abiFilter = apkOutput.filters.find { it.filterType == "ABI" }
         val abiVersionCode = abiCodes[abiFilter?.identifier]
         if (abiVersionCode != null) {
