@@ -7,6 +7,7 @@ import 'package:cheapcheap/models/reminder.dart';
 import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/services/update_service.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/ui/account_screen.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -172,6 +173,21 @@ class SettingsScreen extends StatelessWidget {
             onPressed: () => _importCsv(context),
             icon: const Icon(Icons.upload_file),
             label: Text(strings.importCsv),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            strings.account,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            leading: const Icon(Icons.cloud_outlined),
+            title: Text(strings.cloudSync),
+            subtitle: Text(_syncSubtitle(strings, state)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AccountScreen()),
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -743,5 +759,19 @@ class SettingsScreen extends StatelessWidget {
       strings.themeHippieBlue,
       strings.themeWasabi,
     ];
+  }
+
+  String _syncSubtitle(AppLocalizations strings, AppState state) {
+    if (!state.isSignedIn) return strings.accountNotConfigured;
+    if (state.syncStatus == SyncStatus.syncing) return strings.syncing;
+    if (state.syncStatus == SyncStatus.error) return strings.syncError;
+    if (state.syncStatus == SyncStatus.synced && state.lastSyncTime != null) {
+      final diff = DateTime.now().difference(state.lastSyncTime!);
+      if (diff.inMinutes < 1) return strings.justNow;
+      if (diff.inMinutes < 60) return '${strings.lastSynced}: ${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${strings.lastSynced}: ${diff.inHours}h ago';
+      return '${strings.lastSynced}: ${diff.inDays}d ago';
+    }
+    return strings.noAccount;
   }
 }

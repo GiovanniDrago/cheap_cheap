@@ -5,11 +5,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../config.dart';
 import '../l10n/generated/app_localizations.dart';
 
 class UpdateService {
-  static const String _owner = 'GiovanniDrago';
-  static const String _repo = 'cheap_cheap';
+  static const String _owner = AppConfig.githubOwner;
+  static const String _repo = AppConfig.githubRepo;
   static const String _lastCheckKey = 'last_update_check';
 
   static String? _cachedVersion;

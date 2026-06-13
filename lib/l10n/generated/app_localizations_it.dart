@@ -475,4 +475,89 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get noBudgets => 'Nessun budget.';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get cloudSync => 'Cloud Sync';
+
+  @override
+  String get signIn => 'Accedi';
+
+  @override
+  String get signUp => 'Registrati';
+
+  @override
+  String get signOut => 'Esci';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get syncNow => 'Sincronizza ora';
+
+  @override
+  String get lastSynced => 'Ultima sincronizzazione';
+
+  @override
+  String get syncSuccess => 'Dati sincronizzati con successo';
+
+  @override
+  String get syncError => 'Sincronizzazione fallita. Controlla la connessione.';
+
+  @override
+  String get noAccount => 'Non configurato';
+
+  @override
+  String get never => 'Mai';
+
+  @override
+  String get justNow => 'Adesso';
+
+  @override
+  String get signedInAs => 'Accesso come';
+
+  @override
+  String get syncData => 'Sincronizza dati';
+
+  @override
+  String get signInToSync =>
+      'Accedi per salvare i tuoi dati sul cloud. I dati vengono salvati automaticamente una volta a settimana.';
+
+  @override
+  String get restoreDataTitle => 'Ripristina dati';
+
+  @override
+  String get restoreDataMessage =>
+      'I tuoi dati salvati sono stati trovati sul server. Vuoi ripristinarli? Questo sostituirà i tuoi dati locali attuali.';
+
+  @override
+  String get pushDataTitle => 'Carica dati';
+
+  @override
+  String get pushDataMessage =>
+      'Nessun dato trovato sul server. Vuoi caricare i tuoi dati attuali?';
+
+  @override
+  String get restore => 'Ripristina';
+
+  @override
+  String get skip => 'Salta';
+
+  @override
+  String get fillAllFields => 'Compila tutti i campi.';
+
+  @override
+  String get passwordTooShort =>
+      'La password deve essere di almeno 6 caratteri.';
+
+  @override
+  String get accountNotConfigured => 'Non configurato';
+
+  @override
+  String get syncing => 'Sincronizzazione...';
 }

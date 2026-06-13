@@ -1021,6 +1021,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No budgets yet.'**
   String get noBudgets;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get account;
+
+  /// No description provided for @cloudSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud Sync'**
+  String get cloudSync;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @signUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Up'**
+  String get signUp;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Now'**
+  String get syncNow;
+
+  /// No description provided for @lastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced'**
+  String get lastSynced;
+
+  /// No description provided for @syncSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data synced successfully'**
+  String get syncSuccess;
+
+  /// No description provided for @syncError.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Check your connection.'**
+  String get syncError;
+
+  /// No description provided for @noAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get noAccount;
+
+  /// No description provided for @never.
+  ///
+  /// In en, this message translates to:
+  /// **'Never'**
+  String get never;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as'**
+  String get signedInAs;
+
+  /// No description provided for @syncData.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync data'**
+  String get syncData;
+
+  /// No description provided for @signInToSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to back up your data to the cloud. Your data is automatically saved once a week.'**
+  String get signInToSync;
+
+  /// No description provided for @restoreDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore data'**
+  String get restoreDataTitle;
+
+  /// No description provided for @restoreDataMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved data was found on the server. Do you want to restore it? This will replace your current local data.'**
+  String get restoreDataMessage;
+
+  /// No description provided for @pushDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload data'**
+  String get pushDataTitle;
+
+  /// No description provided for @pushDataMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No data found on the server. Do you want to upload your current data?'**
+  String get pushDataMessage;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
+
+  /// No description provided for @fillAllFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in all fields.'**
+  String get fillAllFields;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters.'**
+  String get passwordTooShort;
+
+  /// No description provided for @accountNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get accountNotConfigured;
+
+  /// No description provided for @syncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get syncing;
 }
 
 class _AppLocalizationsDelegate

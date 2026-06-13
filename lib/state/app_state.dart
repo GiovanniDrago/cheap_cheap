@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:cheapcheap/config.dart';
 import 'package:cheapcheap/data/defaults.dart';
 import 'package:cheapcheap/models/budget.dart';
 import 'package:cheapcheap/models/category.dart';
@@ -13,13 +14,18 @@ import 'package:cheapcheap/models/settings.dart';
 import 'package:cheapcheap/models/stat_key.dart';
 import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/services/storage_service.dart';
+import 'package:cheapcheap/services/supabase_service.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
+enum SyncStatus { idle, syncing, synced, error }
+
 class AppState extends ChangeNotifier {
-  AppState._(this._storage);
+  AppState._(this._storage, {SupabaseService? supabaseService})
+      : _supabaseService = supabaseService;
 
   final StorageService _storage;
+  final SupabaseService? _supabaseService;
 
   List<Category> categories = [];
   List<Expense> expenses = [];
@@ -33,22 +39,32 @@ class AppState extends ChangeNotifier {
   String? lastQuestCompletedName;
   int questCompletionTick = 0;
 
-  static Future<AppState> create() async {
+  SyncStatus _syncStatus = SyncStatus.idle;
+  DateTime? _lastSyncTime;
+  String? _syncEmail;
+
+  SyncStatus get syncStatus => _syncStatus;
+  DateTime? get lastSyncTime => _lastSyncTime;
+  String? get syncEmail => _syncEmail;
+  bool get isSignedIn => _supabaseService?.isSignedIn ?? false;
+  SupabaseService? get supabaseService => _supabaseService;
+
+  static Future<AppState> create({SupabaseService? supabaseService}) async {
     final storage = await StorageService.create();
-    final state = AppState._(storage);
+    final state = AppState._(storage, supabaseService: supabaseService);
     await state._load();
     return state;
   }
 
   Future<void> _load() async {
-    final categoryList = _storage.readJsonList('categories');
+    final categoryList = _storage.readJsonList(AppConfig.keyCategories);
     categories = categoryList == null
         ? [...defaultCategories]
         : categoryList
               .map((item) => Category.fromJson(Map<String, dynamic>.from(item)))
               .toList();
 
-    final expenseList = _storage.readJsonList('expenses');
+    final expenseList = _storage.readJsonList(AppConfig.keyExpenses);
     expenses = expenseList == null
         ? []
         : expenseList
@@ -56,24 +72,24 @@ class AppState extends ChangeNotifier {
               .toList();
     expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
 
-    final budgetList = _storage.readJsonList('budgets');
+    final budgetList = _storage.readJsonList(AppConfig.keyBudgets);
     budgets = budgetList == null
         ? _defaultBudgets()
         : budgetList
               .map((item) => Budget.fromJson(Map<String, dynamic>.from(item)))
               .toList();
 
-    final profileJson = _storage.readJson('profile');
+    final profileJson = _storage.readJson(AppConfig.keyProfile);
     profile = profileJson == null ? Profile() : Profile.fromJson(profileJson);
 
-    final settingsJson = _storage.readJson('settings');
+    final settingsJson = _storage.readJson(AppConfig.keySettings);
     settings = settingsJson == null
         ? Settings()
         : Settings.fromJson(settingsJson);
     await _syncReminders();
     await _syncExpenseReminders();
 
-    final questJson = _storage.readJson('questProgress');
+    final questJson = _storage.readJson(AppConfig.keyQuestProgress);
     if (questJson != null) {
       questCompletions = Map<String, List<String>>.fromEntries(
         questJson.entries.map(
@@ -83,39 +99,48 @@ class AppState extends ChangeNotifier {
       );
     }
 
-    final expenseCountJson = _storage.readJson('dailyExpenseCounts');
+    final expenseCountJson = _storage.readJson(AppConfig.keyDailyExpenseCounts);
     if (expenseCountJson != null) {
       dailyExpenseCounts = expenseCountJson.map(
         (key, value) => MapEntry(key, value as int),
       );
     }
 
-    final questCountJson = _storage.readJson('dailyQuestCounts');
+    final questCountJson = _storage.readJson(AppConfig.keyDailyQuestCounts);
     if (questCountJson != null) {
       dailyQuestCounts = questCountJson.map(
         (key, value) => MapEntry(key, value as int),
       );
     }
+
+    _syncEmail = _storage.readString(AppConfig.keySyncEmail);
+    final lastSync = _storage.readString(AppConfig.keyLastSyncTime);
+    if (lastSync != null && lastSync.isNotEmpty) {
+      _lastSyncTime = DateTime.tryParse(lastSync);
+    }
+    if (_supabaseService?.isSignedIn ?? false) {
+      _syncStatus = SyncStatus.synced;
+    }
   }
 
   Future<void> _persist() async {
     await _storage.writeJsonList(
-      'categories',
+      AppConfig.keyCategories,
       categories.map((category) => category.toJson()).toList(),
     );
     await _storage.writeJsonList(
-      'expenses',
+      AppConfig.keyExpenses,
       expenses.map((expense) => expense.toJson()).toList(),
     );
     await _storage.writeJsonList(
-      'budgets',
+      AppConfig.keyBudgets,
       budgets.map((budget) => budget.toJson()).toList(),
     );
-    await _storage.writeJson('profile', profile.toJson());
-    await _storage.writeJson('settings', settings.toJson());
-    await _storage.writeJson('questProgress', questCompletions);
-    await _storage.writeJson('dailyExpenseCounts', dailyExpenseCounts);
-    await _storage.writeJson('dailyQuestCounts', dailyQuestCounts);
+    await _storage.writeJson(AppConfig.keyProfile, profile.toJson());
+    await _storage.writeJson(AppConfig.keySettings, settings.toJson());
+    await _storage.writeJson(AppConfig.keyQuestProgress, questCompletions);
+    await _storage.writeJson(AppConfig.keyDailyExpenseCounts, dailyExpenseCounts);
+    await _storage.writeJson(AppConfig.keyDailyQuestCounts, dailyQuestCounts);
   }
 
   Locale get locale => Locale(settings.localeCode);
@@ -575,10 +600,10 @@ class AppState extends ChangeNotifier {
 
   String exportStateJson() {
     return jsonEncode({
-      'categories': categories.map((category) => category.toJson()).toList(),
-      'expenses': expenses.map((expense) => expense.toJson()).toList(),
-      'profile': profile.toJson(),
-      'settings': settings.toJson(),
+      AppConfig.keyCategories: categories.map((category) => category.toJson()).toList(),
+      AppConfig.keyExpenses: expenses.map((expense) => expense.toJson()).toList(),
+      AppConfig.keyProfile: profile.toJson(),
+      AppConfig.keySettings: settings.toJson(),
     });
   }
 
@@ -596,5 +621,155 @@ class AppState extends ChangeNotifier {
   String _dateKey(DateTime date) {
     final day = dateOnly(date);
     return '${day.year}-${day.month.toString().padLeft(2, '0')}-${day.day.toString().padLeft(2, '0')}';
+  }
+
+  Map<String, dynamic> _buildStateData() {
+    return {
+      AppConfig.keyCategories: categories.map((c) => c.toJson()).toList(),
+      AppConfig.keyExpenses: expenses.map((e) => e.toJson()).toList(),
+      AppConfig.keyBudgets: budgets.map((b) => b.toJson()).toList(),
+      AppConfig.keyProfile: profile.toJson(),
+      AppConfig.keyQuestProgress: questCompletions,
+      AppConfig.keyDailyExpenseCounts: dailyExpenseCounts,
+      AppConfig.keyDailyQuestCounts: dailyQuestCounts,
+    };
+  }
+
+  void _applyStateData(Map<String, dynamic> data) {
+    if (data[AppConfig.keyCategories] is List) {
+      categories = (data[AppConfig.keyCategories] as List)
+          .map((item) => Category.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+    }
+    if (data[AppConfig.keyExpenses] is List) {
+      expenses = (data[AppConfig.keyExpenses] as List)
+          .map((item) => Expense.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+      expenses.sort((a, b) => _expenseSortDate(b).compareTo(_expenseSortDate(a)));
+    }
+    if (data[AppConfig.keyBudgets] is List) {
+      budgets = (data[AppConfig.keyBudgets] as List)
+          .map((item) => Budget.fromJson(Map<String, dynamic>.from(item)))
+          .toList();
+    }
+    if (data[AppConfig.keyProfile] is Map) {
+      profile = Profile.fromJson(Map<String, dynamic>.from(data[AppConfig.keyProfile]));
+    }
+    if (data[AppConfig.keyQuestProgress] is Map) {
+      questCompletions = Map<String, List<String>>.fromEntries(
+        (data[AppConfig.keyQuestProgress] as Map).entries.map(
+          (entry) => MapEntry(entry.key as String, List<String>.from(entry.value as List)),
+        ),
+      );
+    }
+    if (data[AppConfig.keyDailyExpenseCounts] is Map) {
+      dailyExpenseCounts = (data[AppConfig.keyDailyExpenseCounts] as Map).map(
+        (key, value) => MapEntry(key as String, value as int),
+      );
+    }
+    if (data[AppConfig.keyDailyQuestCounts] is Map) {
+      dailyQuestCounts = (data[AppConfig.keyDailyQuestCounts] as Map).map(
+        (key, value) => MapEntry(key as String, value as int),
+      );
+    }
+    _persist();
+  }
+
+  Future<void> _persistSyncMeta() async {
+    await _storage.writeString(AppConfig.keySyncEmail, _syncEmail ?? '');
+    await _storage.writeString(
+      AppConfig.keyLastSyncTime,
+      _lastSyncTime?.toIso8601String() ?? '',
+    );
+  }
+
+  Future<void> pushToCloud() async {
+    final service = _supabaseService;
+    if (service == null || !service.isSignedIn) return;
+
+    _syncStatus = SyncStatus.syncing;
+    notifyListeners();
+
+    try {
+      final appId = await service.getApplicationId();
+      if (appId == null) return;
+
+      await service.pushPreferences(appId, settings.toJson());
+      await service.pushAppData(appId, 'state', _buildStateData());
+
+      _lastSyncTime = DateTime.now();
+      _syncEmail = service.currentUser?.email;
+      _syncStatus = SyncStatus.synced;
+      await _persistSyncMeta();
+    } catch (_) {
+      _syncStatus = SyncStatus.error;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<void> pullFromCloud() async {
+    final service = _supabaseService;
+    if (service == null || !service.isSignedIn) return;
+
+    _syncStatus = SyncStatus.syncing;
+    notifyListeners();
+
+    try {
+      final appId = await service.getApplicationId();
+      if (appId == null) return;
+
+      final prefsJson = await service.pullPreferences(appId);
+      if (prefsJson != null) {
+        settings = Settings.fromJson(prefsJson);
+      }
+
+      final stateData = await service.pullAppData(appId, 'state');
+      if (stateData != null) {
+        _applyStateData(stateData);
+      }
+
+      _lastSyncTime = DateTime.now();
+      _syncEmail = service.currentUser?.email;
+      _syncStatus = SyncStatus.synced;
+      await _persistSyncMeta();
+      await _syncReminders();
+      await _syncExpenseReminders();
+    } catch (_) {
+      _syncStatus = SyncStatus.error;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  Future<bool> hasCloudData() async {
+    final service = _supabaseService;
+    if (service == null || !service.isSignedIn) return false;
+
+    final appId = await service.getApplicationId();
+    if (appId == null) return false;
+
+    return service.hasCloudData(appId);
+  }
+
+  Future<void> registerAppLink() async {
+    final service = _supabaseService;
+    if (service == null || !service.isSignedIn) return;
+
+    final appId = await service.getApplicationId();
+    if (appId == null) return;
+
+    await service.registerAppLink(appId);
+    _syncEmail = service.currentUser?.email;
+    await _persistSyncMeta();
+  }
+
+  Future<void> clearSyncState() async {
+    _syncStatus = SyncStatus.idle;
+    _lastSyncTime = null;
+    _syncEmail = null;
+    await _storage.writeString(AppConfig.keySyncEmail, '');
+    await _storage.writeString(AppConfig.keyLastSyncTime, '');
+    notifyListeners();
   }
 }

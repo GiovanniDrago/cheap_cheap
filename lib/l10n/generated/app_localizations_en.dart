@@ -475,4 +475,88 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBudgets => 'No budgets yet.';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get cloudSync => 'Cloud Sync';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signUp => 'Sign Up';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get syncNow => 'Sync Now';
+
+  @override
+  String get lastSynced => 'Last synced';
+
+  @override
+  String get syncSuccess => 'Data synced successfully';
+
+  @override
+  String get syncError => 'Sync failed. Check your connection.';
+
+  @override
+  String get noAccount => 'Not configured';
+
+  @override
+  String get never => 'Never';
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String get signedInAs => 'Signed in as';
+
+  @override
+  String get syncData => 'Sync data';
+
+  @override
+  String get signInToSync =>
+      'Sign in to back up your data to the cloud. Your data is automatically saved once a week.';
+
+  @override
+  String get restoreDataTitle => 'Restore data';
+
+  @override
+  String get restoreDataMessage =>
+      'Your saved data was found on the server. Do you want to restore it? This will replace your current local data.';
+
+  @override
+  String get pushDataTitle => 'Upload data';
+
+  @override
+  String get pushDataMessage =>
+      'No data found on the server. Do you want to upload your current data?';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get skip => 'Skip';
+
+  @override
+  String get fillAllFields => 'Please fill in all fields.';
+
+  @override
+  String get passwordTooShort => 'Password must be at least 6 characters.';
+
+  @override
+  String get accountNotConfigured => 'Not configured';
+
+  @override
+  String get syncing => 'Syncing...';
 }
