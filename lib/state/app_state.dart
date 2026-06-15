@@ -42,10 +42,12 @@ class AppState extends ChangeNotifier {
   SyncStatus _syncStatus = SyncStatus.idle;
   DateTime? _lastSyncTime;
   String? _syncEmail;
+  String? _syncErrorMessage;
 
   SyncStatus get syncStatus => _syncStatus;
   DateTime? get lastSyncTime => _lastSyncTime;
   String? get syncEmail => _syncEmail;
+  String? get syncErrorMessage => _syncErrorMessage;
   bool get isSignedIn => _supabaseService?.isSignedIn ?? false;
   SupabaseService? get supabaseService => _supabaseService;
 
@@ -688,11 +690,17 @@ class AppState extends ChangeNotifier {
     if (service == null || !service.isSignedIn) return;
 
     _syncStatus = SyncStatus.syncing;
+    _syncErrorMessage = null;
     notifyListeners();
 
     try {
       final appId = await service.getApplicationId();
-      if (appId == null) return;
+      if (appId == null) {
+        _syncStatus = SyncStatus.error;
+        _syncErrorMessage = 'Application not found on server. Contact the app developer.';
+        notifyListeners();
+        return;
+      }
 
       await service.pushPreferences(appId, settings.toJson());
       await service.pushAppData(appId, 'state', _buildStateData());
@@ -701,8 +709,9 @@ class AppState extends ChangeNotifier {
       _syncEmail = service.currentUser?.email;
       _syncStatus = SyncStatus.synced;
       await _persistSyncMeta();
-    } catch (_) {
+    } catch (e) {
       _syncStatus = SyncStatus.error;
+      _syncErrorMessage = e.toString();
     } finally {
       notifyListeners();
     }
@@ -713,11 +722,17 @@ class AppState extends ChangeNotifier {
     if (service == null || !service.isSignedIn) return;
 
     _syncStatus = SyncStatus.syncing;
+    _syncErrorMessage = null;
     notifyListeners();
 
     try {
       final appId = await service.getApplicationId();
-      if (appId == null) return;
+      if (appId == null) {
+        _syncStatus = SyncStatus.error;
+        _syncErrorMessage = 'Application not found on server. Contact the app developer.';
+        notifyListeners();
+        return;
+      }
 
       final prefsJson = await service.pullPreferences(appId);
       if (prefsJson != null) {
@@ -735,8 +750,9 @@ class AppState extends ChangeNotifier {
       await _persistSyncMeta();
       await _syncReminders();
       await _syncExpenseReminders();
-    } catch (_) {
+    } catch (e) {
       _syncStatus = SyncStatus.error;
+      _syncErrorMessage = e.toString();
     } finally {
       notifyListeners();
     }
@@ -757,11 +773,22 @@ class AppState extends ChangeNotifier {
     if (service == null || !service.isSignedIn) return;
 
     final appId = await service.getApplicationId();
-    if (appId == null) return;
+    if (appId == null) {
+      _syncStatus = SyncStatus.error;
+      _syncErrorMessage = 'Application not found on server. Contact the app developer.';
+      notifyListeners();
+      return;
+    }
 
     await service.registerAppLink(appId);
     _syncEmail = service.currentUser?.email;
     await _persistSyncMeta();
+  }
+
+  void setSyncEmail(String email) {
+    _syncEmail = email;
+    _persistSyncMeta();
+    notifyListeners();
   }
 
   Future<void> clearSyncState() async {

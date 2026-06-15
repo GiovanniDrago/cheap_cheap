@@ -179,5 +179,7 @@
   "fillAllFields": "Compila tutti i campi.",
   "passwordTooShort": "La password deve essere di almeno 6 caratteri.",
   "accountNotConfigured": "Non configurato",
-  "syncing": "Sincronizzazione..."
+  "syncing": "Sincronizzazione...",
+  "confirmationSentTitle": "Conferma la tua email",
+  "confirmationSentMessage": "Una email di conferma è stata inviata. Controlla la tua casella di posta e conferma il tuo indirizzo email, poi accedi."
 }

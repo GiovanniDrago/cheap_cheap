@@ -1183,6 +1183,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Syncing...'**
   String get syncing;
+
+  /// No description provided for @confirmationSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm your email'**
+  String get confirmationSentTitle;
+
+  /// No description provided for @confirmationSentMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'A confirmation email has been sent. Please check your inbox and confirm your email address, then sign in.'**
+  String get confirmationSentMessage;
 }
 
 class _AppLocalizationsDelegate

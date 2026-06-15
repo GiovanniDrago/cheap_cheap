@@ -3,7 +3,9 @@ final class AppConfig {
 
   // Supabase
   static const supabaseUrl = 'https://riikpjuqkgpbdarodiek.supabase.co';
-  static const supabaseAnonKey = 'SUPABASE_ANON_KEY';
+  static const supabaseAnonKey =
+      'sb_publishable_0WSUZ1RXR9zIzQkh4N6NhA_VJg_iMgl';
+  static const emailRedirectUrl = 'https://quiet-sunshine-c7bf57.netlify.app/';
 
   // Application identity (used for Supabase app lookup and data scoping)
   static const appKey = 'cheap_cheap';

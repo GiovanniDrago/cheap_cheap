@@ -179,5 +179,7 @@
   "fillAllFields": "Please fill in all fields.",
   "passwordTooShort": "Password must be at least 6 characters.",
   "accountNotConfigured": "Not configured",
-  "syncing": "Syncing..."
+  "syncing": "Syncing...",
+  "confirmationSentTitle": "Confirm your email",
+  "confirmationSentMessage": "A confirmation email has been sent. Please check your inbox and confirm your email address, then sign in."
 }

@@ -113,7 +113,7 @@ class _AccountScreenState extends State<AccountScreen> {
           Padding(
             padding: const EdgeInsets.only(left: 16),
             child: Text(
-              strings.syncError,
+              state.syncErrorMessage ?? strings.syncError,
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
@@ -181,6 +181,7 @@ class _AccountScreenState extends State<AccountScreen> {
       if (service == null) return;
 
       await service.signIn(email, password);
+      state.setSyncEmail(email);
       await state.registerAppLink();
       if (!mounted) return;
 
@@ -228,7 +229,15 @@ class _AccountScreenState extends State<AccountScreen> {
       final service = state.supabaseService;
       if (service == null) return;
 
-      await service.signUp(email, password);
+      final hasSession = await service.signUp(email, password);
+      if (!mounted) return;
+
+      if (!hasSession) {
+        _showConfirmationSentDialog();
+        return;
+      }
+
+      state.setSyncEmail(email);
       await state.registerAppLink();
       if (!mounted) return;
 
@@ -293,6 +302,23 @@ class _AccountScreenState extends State<AccountScreen> {
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(strings.syncNow),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showConfirmationSentDialog() {
+    final strings = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(strings.confirmationSentTitle),
+        content: Text(strings.confirmationSentMessage),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(strings.ok),
           ),
         ],
       ),

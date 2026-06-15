@@ -559,4 +559,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncing => 'Syncing...';
+
+  @override
+  String get confirmationSentTitle => 'Confirm your email';
+
+  @override
+  String get confirmationSentMessage =>
+      'A confirmation email has been sent. Please check your inbox and confirm your email address, then sign in.';
 }

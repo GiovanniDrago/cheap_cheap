@@ -9,8 +9,13 @@ class SupabaseService {
   bool get isSignedIn => currentUser != null;
   Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 
-  Future<void> signUp(String email, String password) async {
-    await _client.auth.signUp(email: email, password: password);
+  Future<bool> signUp(String email, String password) async {
+    final response = await _client.auth.signUp(
+      email: email,
+      password: password,
+      emailRedirectTo: AppConfig.emailRedirectUrl,
+    );
+    return response.session != null;
   }
 
   Future<void> signIn(String email, String password) async {
@@ -35,6 +40,7 @@ class SupabaseService {
   }
 
   Future<void> registerAppLink(String applicationId) async {
+    if (!isSignedIn) return;
     final userId = currentUser!.id;
     await _client.from('user_applications').upsert({
       'user_id': userId,

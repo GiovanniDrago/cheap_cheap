@@ -764,7 +764,9 @@ class SettingsScreen extends StatelessWidget {
   String _syncSubtitle(AppLocalizations strings, AppState state) {
     if (!state.isSignedIn) return strings.accountNotConfigured;
     if (state.syncStatus == SyncStatus.syncing) return strings.syncing;
-    if (state.syncStatus == SyncStatus.error) return strings.syncError;
+    if (state.syncStatus == SyncStatus.error) {
+      return state.syncErrorMessage ?? strings.syncError;
+    }
     if (state.syncStatus == SyncStatus.synced && state.lastSyncTime != null) {
       final diff = DateTime.now().difference(state.lastSyncTime!);
       if (diff.inMinutes < 1) return strings.justNow;
