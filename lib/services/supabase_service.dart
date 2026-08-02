@@ -75,7 +75,7 @@ class SupabaseService {
       'user_id': userId,
       'application_id': applicationId,
       'preferences': preferences,
-    });
+    }, onConflict: 'user_id,application_id');
   }
 
   Future<Map<String, dynamic>?> pullPreferences(String applicationId) async {
@@ -97,29 +97,12 @@ class SupabaseService {
     Map<String, dynamic> data,
   ) async {
     final userId = currentUser!.id;
-    final existing = await _client
-        .from('app_data')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('application_id', applicationId)
-        .eq('data_type', dataType)
-        .maybeSingle();
-
-    if (existing != null) {
-      await _client
-          .from('app_data')
-          .update({'data': data})
-          .eq('user_id', userId)
-          .eq('application_id', applicationId)
-          .eq('data_type', dataType);
-    } else {
-      await _client.from('app_data').insert({
-        'user_id': userId,
-        'application_id': applicationId,
-        'data_type': dataType,
-        'data': data,
-      });
-    }
+    await _client.from('app_data').upsert({
+      'user_id': userId,
+      'application_id': applicationId,
+      'data_type': dataType,
+      'data': data,
+    }, onConflict: 'user_id,application_id,data_type');
   }
 
   Future<Map<String, dynamic>?> pullAppData(

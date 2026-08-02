@@ -182,7 +182,11 @@ class _AccountScreenState extends State<AccountScreen> {
 
       await service.signIn(email, password);
       state.setSyncEmail(email);
-      await state.registerAppLink();
+      try {
+        await state.registerAppLink();
+      } catch (_) {
+        // Best-effort: app link registration must not block the restore flow.
+      }
       if (!mounted) return;
 
       final hasData = await state.hasCloudData();
@@ -238,7 +242,11 @@ class _AccountScreenState extends State<AccountScreen> {
       }
 
       state.setSyncEmail(email);
-      await state.registerAppLink();
+      try {
+        await state.registerAppLink();
+      } catch (_) {
+        // Best-effort: app link registration must not block the sync flow.
+      }
       if (!mounted) return;
 
       final shouldPush = await _showPushDialog();
@@ -253,7 +261,7 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   Future<void> _syncNow(AppState state) async {
-    await state.pushToCloud();
+    await state.syncNow();
   }
 
   Future<void> _signOut(AppState state) async {

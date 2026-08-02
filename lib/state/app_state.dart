@@ -742,6 +742,8 @@ class AppState extends ChangeNotifier {
       final stateData = await service.pullAppData(appId, 'state');
       if (stateData != null) {
         _applyStateData(stateData);
+      } else if (prefsJson != null) {
+        await _persist();
       }
 
       _lastSyncTime = DateTime.now();
@@ -766,6 +768,38 @@ class AppState extends ChangeNotifier {
     if (appId == null) return false;
 
     return service.hasCloudData(appId);
+  }
+
+  bool hasLocalData() {
+    return expenses.isNotEmpty ||
+        questCompletions.isNotEmpty ||
+        dailyExpenseCounts.isNotEmpty ||
+        dailyQuestCounts.isNotEmpty ||
+        profile.name.isNotEmpty ||
+        budgets.any((b) => b.isEnabled) ||
+        categories.any((c) => !c.isDefault);
+  }
+
+  Future<void> syncNow() async {
+    final service = _supabaseService;
+    if (service == null || !service.isSignedIn) return;
+
+    try {
+      final hasCloud = await hasCloudData();
+      final hasLocal = hasLocalData();
+
+      if (!hasCloud) {
+        await pushToCloud();
+      } else if (!hasLocal) {
+        await pullFromCloud();
+      } else {
+        await pushToCloud();
+      }
+    } catch (e) {
+      _syncStatus = SyncStatus.error;
+      _syncErrorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> registerAppLink() async {
