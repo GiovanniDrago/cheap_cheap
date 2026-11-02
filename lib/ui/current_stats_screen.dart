@@ -5,11 +5,11 @@ import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/ui/widgets/month_year_picker_dialog.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:cheapcheap/utils/formatters.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 
 class CurrentStatsScreen extends StatefulWidget {
@@ -46,12 +46,12 @@ class _CurrentStatsScreenState extends State<CurrentStatsScreen> {
 
   Future<void> _pickMonth() async {
     final state = context.read<AppState>();
-    final picked = await showMonthYearPicker(
+    final picked = await showAppMonthYearPicker(
       context: context,
       initialDate: _currentMonth,
       firstDate: DateTime(2018, 1),
       lastDate: DateTime(2100, 12),
-      locale: pickerLocale(state.locale, state.settings.weekStart),
+      locale: state.locale,
     );
     if (picked != null) {
       setState(() {
