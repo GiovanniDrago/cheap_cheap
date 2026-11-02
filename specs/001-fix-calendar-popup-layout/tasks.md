@@ -29,8 +29,8 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 **Purpose**: Small shared pieces both the dialog and its tests need.
 
-- [ ] T001 [P] Add `List<DateTime> monthsOfYear(int year)` returning the twelve first-of-month dates of `year` in `lib/utils/date_utils.dart`, documented in English and covered by the grid tests
-- [ ] T002 [P] Create the widget-test harness `pumpPicker` (wraps `showAppMonthYearPicker` in a `MaterialApp` with `Localizations.override` for `en`/`it`, a configurable viewport size and text scale, and returns the tapped result) in `test/ui/widgets/picker_test_harness.dart`
+- [X] T001 [P] Add `List<DateTime> monthsOfYear(int year)` returning the twelve first-of-month dates of `year` in `lib/utils/date_utils.dart`, documented in English and covered by the grid tests
+- [X] T002 [P] Create the widget-test harness `pumpPicker` (wraps `showAppMonthYearPicker` in a `MaterialApp` with `Localizations.override` for `en`/`it`, a configurable viewport size and text scale, and returns the tapped result) in `test/ui/widgets/picker_test_harness.dart`
 
 ---
 
@@ -40,7 +40,7 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 **⚠️ CRITICAL**: No user story work can begin until this task is complete.
 
-- [ ] T003 Create `Future<DateTime?> showAppMonthYearPicker({required BuildContext context, required DateTime initialDate, required DateTime firstDate, required DateTime lastDate, required Locale locale})` plus the stateful `MonthYearPickerDialog` shell in `lib/ui/widgets/month_year_picker_dialog.dart`: `Dialog` with 16 px horizontal and 24 px vertical insets, header showing the localized month and year, year stepper that stops at `firstDate.year`/`lastDate.year`, cancel action, `null` on dismissal, and the state invariants INV-1 to INV-5 from `data-model.md`
+- [X] T003 Create `Future<DateTime?> showAppMonthYearPicker({required BuildContext context, required DateTime initialDate, required DateTime firstDate, required DateTime lastDate, required Locale locale})` plus the stateful `MonthYearPickerDialog` shell in `lib/ui/widgets/month_year_picker_dialog.dart`: `Dialog` with 16 px horizontal and 24 px vertical insets, header showing the localized month and year, year stepper that stops at `firstDate.year`/`lastDate.year`, cancel action, `null` on dismissal, and the state invariants INV-1 to INV-5 from `data-model.md`
 
 **Checkpoint**: Entry function exists and the dialog opens and closes, so all stories can proceed.
 
@@ -54,12 +54,12 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 ### Tests for User Story 1
 
-- [ ] T004 [US1] Write widget tests in `test/ui/widgets/month_year_picker_labels_test.dart` asserting that the English dialog shows the twelve complete names (`January` … `December`) and that tapping a month returns the first day of that month, using the harness from T002
+- [X] T004 [US1] Write widget tests in `test/ui/widgets/month_year_picker_labels_test.dart` asserting that the English dialog shows the twelve complete names (`January` … `December`) and that tapping a month returns the first day of that month, using the harness from T002
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Implement the month grid in `lib/ui/widgets/month_year_picker_dialog.dart`: twelve cells built from `monthsOfYear`, labels from `DateFormat.MMMM(locale)` (contract C-2), out-of-range months rendered disabled (INV-3), tap returns the first day of the selected month, dialog closes on selection
-- [ ] T006 [US1] Replace `showMonthYearPicker` with `showAppMonthYearPicker` in `_pickMonth` of `lib/ui/home_screen.dart`, passing `initialDate: _currentMonth`, `firstDate: DateTime(2018, 1)`, `lastDate: DateTime(2100, 12)` and the app locale
+- [X] T005 [US1] Implement the month grid in `lib/ui/widgets/month_year_picker_dialog.dart`: twelve cells built from `monthsOfYear`, labels from `DateFormat.MMMM(locale)` (contract C-2), out-of-range months rendered disabled (INV-3), tap returns the first day of the selected month, dialog closes on selection
+- [X] T006 [US1] Replace `showMonthYearPicker` with `showAppMonthYearPicker` in `_pickMonth` of `lib/ui/home_screen.dart`, passing `initialDate: _currentMonth`, `firstDate: DateTime(2018, 1)`, `lastDate: DateTime(2100, 12)` and the app locale
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -73,12 +73,12 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 ### Tests for User Story 2
 
-- [ ] T007 [US2] Write widget tests in `test/ui/widgets/month_year_picker_adaptive_test.dart` covering narrow width (320 dp), landscape, and text scale 2.0, asserting that `tester.takeException()` is `null` and that all twelve labels are complete (contract C-1, C-3, C-4)
+- [X] T007 [US2] Write widget tests in `test/ui/widgets/month_year_picker_adaptive_test.dart` covering narrow width (320 dp), landscape, and text scale 2.0, asserting that `tester.takeException()` is `null` and that all twelve labels are complete (contract C-1, C-3, C-4)
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Implement responsive sizing in `lib/ui/widgets/month_year_picker_dialog.dart` per research.md D3: width from `MediaQuery` minus 32 capped at 400, three columns at default scale, two columns when the text scale is large or the width is very small, `FittedBox(scaleDown)` as last-resort label fit, and a vertically scrollable grid region when the content cannot fit
-- [ ] T009 [US2] Add accessibility to `lib/ui/widgets/month_year_picker_dialog.dart`: semantics label with the complete localized month name plus year, selected and disabled states announced, and tap targets of at least 48 x 48 logical pixels (contract accessibility section, FR-009)
+- [X] T008 [US2] Implement responsive sizing in `lib/ui/widgets/month_year_picker_dialog.dart` per research.md D3: width from `MediaQuery` minus 32 capped at 400, three columns at default scale, two columns when the text scale is large or the width is very small, `FittedBox(scaleDown)` as last-resort label fit, and a vertically scrollable grid region when the content cannot fit
+- [X] T009 [US2] Add accessibility to `lib/ui/widgets/month_year_picker_dialog.dart`: semantics label with the complete localized month name plus year, selected and disabled states announced, and tap targets of at least 48 x 48 logical pixels (contract accessibility section, FR-009)
 
 **Checkpoint**: User Stories 1 and 2 both work independently.
 
@@ -92,11 +92,11 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Replace `showMonthYearPicker` with `showAppMonthYearPicker` in `_pickMonth` of `lib/ui/current_stats_screen.dart`, keeping the same date bounds and locale
+- [X] T010 [US3] Replace `showMonthYearPicker` with `showAppMonthYearPicker` in `_pickMonth` of `lib/ui/current_stats_screen.dart`, keeping the same date bounds and locale
 
 ### Tests for User Story 3
 
-- [ ] T011 [P] [US3] Write a widget test in `test/ui/screens/current_stats_month_picker_test.dart` that opens the picker from `CurrentStatsScreen` (with a `Provider` supplying `AppState` created against mocked `SharedPreferences`) and asserts the same twelve complete month labels (contract C-6)
+- [X] T011 [P] [US3] Write a widget test in `test/ui/screens/current_stats_month_picker_test.dart` that opens the picker from `CurrentStatsScreen` (with a `Provider` supplying `AppState` created against mocked `SharedPreferences`) and asserts the same twelve complete month labels (contract C-6)
 
 **Checkpoint**: All three user stories are independently functional.
 
@@ -106,9 +106,9 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 
 **Purpose**: Remove the replaced dependency and validate the whole feature.
 
-- [ ] T012 [P] Remove the `month_year_picker` entry from `pubspec.yaml`
-- [ ] T013 [P] Remove the `MonthYearPickerLocalizations.delegate` entry and the related import from `lib/app.dart`
-- [ ] T014 Confirm no residual references remain by searching `lib/` and `test/` for `month_year_picker` and `MonthYearPicker`, and confirm `pickerLocale` in `lib/utils/date_utils.dart` is still used by the day pickers in `lib/ui/expense_form_screen.dart`
+- [X] T012 [P] Remove the `month_year_picker` entry from `pubspec.yaml`
+- [X] T013 [P] Remove the `MonthYearPickerLocalizations.delegate` entry and the related import from `lib/app.dart`
+- [X] T014 Confirm no residual references remain by searching `lib/` and `test/` for `month_year_picker` and `MonthYearPicker`, and confirm `pickerLocale` in `lib/utils/date_utils.dart` is still used by the day pickers in `lib/ui/expense_form_screen.dart`
 - [ ] T015 Run `flutter pub get`, `flutter analyze` and `flutter test` from the repository root (`pubspec.yaml`) in CI, and fix any failure until analyze is clean and the suite is green
 - [ ] T016 Execute the manual scenarios of `specs/001-fix-calendar-popup-layout/quickstart.md` on a device (portrait, 320 dp width, text scale 2.0, landscape, English, Italian, statistics screen, screen reader) and record the outcomes in the pull request description
 
@@ -187,3 +187,10 @@ Task: "T013 Remove MonthYearPickerLocalizations delegate from lib/app.dart"
 - Month names must come from `intl`; do not add ARB keys and do not hardcode labels
 - `flutter analyze` and `flutter test` are mandatory before considering the feature done
 - Commit after each logical group of tasks
+
+## Implementation Notes (2026-11-02)
+
+- T001-T014 completed in branch `001-fix-calendar-popup-layout`.
+- T015 could not run on the development VM: the Flutter SDK is not installed here (`flutter`, `dart` and `fvm` are absent from PATH). CI must run `flutter analyze` and `flutter test` before merge.
+- T016 requires a physical device; it remains open for the pull request validation.
+- `lib/ui/widgets/month_year_picker_dialog.dart` replaces the third-party month-year picker; the dependency and its localization delegate were removed.

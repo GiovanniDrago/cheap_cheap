@@ -10,6 +10,10 @@ DateTime addMonths(DateTime date, int offset) {
   return DateTime(date.year, date.month + offset, 1);
 }
 
+/// Returns the twelve first-of-month dates of [year], January first.
+List<DateTime> monthsOfYear(int year) =>
+    List<DateTime>.generate(12, (index) => DateTime(year, index + 1, 1));
+
 /// Returns a locale override for date pickers so the calendar starts on
 /// Monday when the user has chosen [weekStart] == 'monday'.
 ///

@@ -5,7 +5,6 @@ import 'package:cheapcheap/ui/main_shell.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:month_year_picker/month_year_picker.dart';
 import 'package:provider/provider.dart';
 
 class CheapCheapApp extends StatelessWidget {
@@ -47,7 +46,6 @@ class CheapCheapApp extends StatelessWidget {
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: [
             ...AppLocalizations.localizationsDelegates,
-            MonthYearPickerLocalizations.delegate,
           ],
           onGenerateRoute: AppRouter.onGenerateRoute,
           home: const MainShell(),
