@@ -93,7 +93,6 @@ void main() {
       tester,
     ) async {
       final handle = tester.ensureSemantics();
-      addTearDown(handle.dispose);
 
       final harness = await pumpPicker(tester);
       await harness.open(tester);
@@ -106,6 +105,10 @@ void main() {
       );
       expect(size.width, greaterThanOrEqualTo(48));
       expect(size.height, greaterThanOrEqualTo(48));
+
+      // Dispose inside the test body: the framework verifies that every
+      // semantics handle is released before teardown callbacks run.
+      handle.dispose();
     });
   });
 }
