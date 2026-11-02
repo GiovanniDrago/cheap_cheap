@@ -109,7 +109,7 @@ Single Flutter project: application code under `lib/`, tests under `test/`, feat
 - [X] T012 [P] Remove the `month_year_picker` entry from `pubspec.yaml`
 - [X] T013 [P] Remove the `MonthYearPickerLocalizations.delegate` entry and the related import from `lib/app.dart`
 - [X] T014 Confirm no residual references remain by searching `lib/` and `test/` for `month_year_picker` and `MonthYearPicker`, and confirm `pickerLocale` in `lib/utils/date_utils.dart` is still used by the day pickers in `lib/ui/expense_form_screen.dart`
-- [ ] T015 Run `flutter pub get`, `flutter analyze` and `flutter test` from the repository root (`pubspec.yaml`) in CI, and fix any failure until analyze is clean and the suite is green
+- [X] T015 Run `flutter pub get`, `flutter analyze` and `flutter test` from the repository root (`pubspec.yaml`) in CI, and fix any failure until analyze is clean and the suite is green
 - [ ] T016 Execute the manual scenarios of `specs/001-fix-calendar-popup-layout/quickstart.md` on a device (portrait, 320 dp width, text scale 2.0, landscape, English, Italian, statistics screen, screen reader) and record the outcomes in the pull request description
 
 ---
@@ -191,6 +191,6 @@ Task: "T013 Remove MonthYearPickerLocalizations delegate from lib/app.dart"
 ## Implementation Notes (2026-11-02)
 
 - T001-T014 completed in branch `001-fix-calendar-popup-layout`.
-- T015 could not run on the development VM: the Flutter SDK is not installed here (`flutter`, `dart` and `fvm` are absent from PATH). CI must run `flutter analyze` and `flutter test` before merge.
+- T015 completed in CI by the `Flutter Check` workflow (run 41416472439): `flutter analyze` clean and 11 tests passing on Flutter 3.41.6.
 - T016 requires a physical device; it remains open for the pull request validation.
 - `lib/ui/widgets/month_year_picker_dialog.dart` replaces the third-party month-year picker; the dependency and its localization delegate were removed.
