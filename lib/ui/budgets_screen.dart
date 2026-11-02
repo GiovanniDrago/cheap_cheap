@@ -429,7 +429,7 @@ class _BudgetFormDialogState extends State<_BudgetFormDialog> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<BudgetPeriod>(
-              value: _period,
+              initialValue: _period,
               decoration: InputDecoration(labelText: strings.month),
               items: [
                 DropdownMenuItem(
@@ -466,7 +466,6 @@ class _BudgetFormDialogState extends State<_BudgetFormDialog> {
               decoration: InputDecoration(
                 labelText: strings.category,
               ),
-              value: null,
               hint: Text(strings.allCategories),
               items: [
                 DropdownMenuItem<String?>(
