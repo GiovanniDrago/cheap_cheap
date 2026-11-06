@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "appId": "com.example.notes",
+  "branch": "fdroid/2.0.11",
+  "release": {
+    "versionName": "2.0.11",
+    "baseVersionCode": 20011,
+    "tag": "v2.0.11",
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "workflowFile": "android-release-build.yml",
+    "flutterVersion": "3.41.6",
+    "buildPath": "/home/vagrant/build/com.example.notes",
+    "flavor": "direct",
+    "abis": [
+      {
+        "abi": "armeabi-v7a",
+        "apk": "app-armeabi-v7a-direct-release.apk",
+        "url": "https://github.com/example/notes/releases/download/v2.0.11/app-armeabi-v7a-direct-release.apk",
+        "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      {
+        "abi": "arm64-v8a",
+        "apk": "app-arm64-v8a-direct-release.apk",
+        "url": "https://github.com/example/notes/releases/download/v2.0.11/app-arm64-v8a-direct-release.apk",
+        "sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      {
+        "abi": "x86_64",
+        "apk": "app-x86_64-direct-release.apk",
+        "url": "https://github.com/example/notes/releases/download/v2.0.11/app-x86_64-direct-release.apk",
+        "sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+      }
+    ],
+    "signingKeySha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "reproducible": true
+  },
+  "checks": [
+    {
+      "name": "release-tag",
+      "ok": true,
+      "detail": "v2.0.11 points to 0123456789abcdef0123456789abcdef01234567"
+    },
+    {
+      "name": "abi-split",
+      "ok": true,
+      "detail": "three APKs produced by the release workflow"
+    }
+  ],
+  "warnings": []
+}

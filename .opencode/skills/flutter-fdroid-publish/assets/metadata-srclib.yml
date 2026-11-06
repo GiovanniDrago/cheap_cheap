@@ -1,0 +1,111 @@
+Categories:
+  - __CATEGORY__
+
+License: __LICENSE__
+AuthorName: __AUTHOR_NAME__
+SourceCode: __SOURCE_CODE__
+IssueTracker: __ISSUE_TRACKER__
+Changelog: __CHANGELOG__
+
+RepoType: git
+Repo: __REPO_URL__
+
+Builds:
+  - versionName: __VERSION_NAME__
+    versionCode: __VERCODE_1__
+    commit: __COMMIT__
+    output: build/app/outputs/flutter-apk/app-armeabi-v7a__FLAVOR_SEGMENT__-release.apk
+    binary: __BINARY_BASE__/app-armeabi-v7a__FLAVOR_SEGMENT__-release.apk
+    srclibs:
+      - flutter@stable
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - "flutterVersion=$(sed -n -E \"s/.*flutter-version: '(.*)'/\\1/p\" __WORKFLOW_FILE__)"
+      - '[[ $flutterVersion ]]'
+      - git -C $$flutter$$ checkout -f $flutterVersion
+      - export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scandelete:
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi
+        --target-platform="android-arm" --build-name $$VERSION$$
+        --build-number $(( $$VERCODE$$ / 10 )) __BUILD_EXTRA__
+
+  - versionName: __VERSION_NAME__
+    versionCode: __VERCODE_2__
+    commit: __COMMIT__
+    output: build/app/outputs/flutter-apk/app-arm64-v8a__FLAVOR_SEGMENT__-release.apk
+    binary: __BINARY_BASE__/app-arm64-v8a__FLAVOR_SEGMENT__-release.apk
+    srclibs:
+      - flutter@stable
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - "flutterVersion=$(sed -n -E \"s/.*flutter-version: '(.*)'/\\1/p\" __WORKFLOW_FILE__)"
+      - '[[ $flutterVersion ]]'
+      - git -C $$flutter$$ checkout -f $flutterVersion
+      - export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scandelete:
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi
+        --target-platform="android-arm64" --build-name $$VERSION$$
+        --build-number $(( $$VERCODE$$ / 10 )) __BUILD_EXTRA__
+
+  - versionName: __VERSION_NAME__
+    versionCode: __VERCODE_3__
+    commit: __COMMIT__
+    output: build/app/outputs/flutter-apk/app-x86_64__FLAVOR_SEGMENT__-release.apk
+    binary: __BINARY_BASE__/app-x86_64__FLAVOR_SEGMENT__-release.apk
+    srclibs:
+      - flutter@stable
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - "flutterVersion=$(sed -n -E \"s/.*flutter-version: '(.*)'/\\1/p\" __WORKFLOW_FILE__)"
+      - '[[ $flutterVersion ]]'
+      - git -C $$flutter$$ checkout -f $flutterVersion
+      - export SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scandelete:
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi
+        --target-platform="android-x64" --build-name $$VERSION$$
+        --build-number $(( $$VERCODE$$ / 10 )) __BUILD_EXTRA__
+
+AllowedAPKSigningKeys: "__SIGNING_KEY_SHA256__"
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags __TAG_PATTERN__
+VercodeOperation:
+  - '%c * 10 + 1'
+  - '%c * 10 + 2'
+  - '%c * 10 + 3'
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: __VERSION_NAME__
+CurrentVersionCode: __VERCODE_3__

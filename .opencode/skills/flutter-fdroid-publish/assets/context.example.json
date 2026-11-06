@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "mode": "new",
+  "app": {
+    "packageId": "com.example.notes",
+    "name": "Notes",
+    "license": "GPL-3.0-only",
+    "authorName": "Example Author",
+    "sourceCode": "https://github.com/example/notes",
+    "issueTracker": "https://github.com/example/notes/issues",
+    "changelog": "https://github.com/example/notes/releases",
+    "website": "https://example.com/notes",
+    "rfpIssue": "rfp#1234"
+  },
+  "upstream": {
+    "repoUrl": "https://github.com/example/notes",
+    "branch": "main",
+    "defaultBranch": "main",
+    "workDir": "/home/user/fdroid-work/com.example.notes/upstream",
+    "tagPattern": "^v[\\d.]+$",
+    "workflowFile": "android-release-build.yml",
+    "flavor": "direct",
+    "subdir": ""
+  },
+  "release": {
+    "versionName": "2.0.11",
+    "baseVersionCode": 20011,
+    "tag": "v2.0.11",
+    "abis": ["armeabi-v7a", "arm64-v8a", "x86_64"]
+  },
+  "flutter": {
+    "integration": "submodule",
+    "version": "3.41.6",
+    "submodulePath": ".flutter"
+  },
+  "fork": {
+    "host": "https://gitlab.com",
+    "namespace": "example-user",
+    "projectPath": "example-user/fdroiddata",
+    "url": "https://gitlab.com/example-user/fdroiddata",
+    "protocol": "ssh",
+    "visibility": "public"
+  },
+  "category": {
+    "primary": "Note",
+    "alternatives": ["Task", "Text Editor"],
+    "sourceSha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+  },
+  "approvals": {
+    "upstreamChanges": true,
+    "upstreamPush": true,
+    "autoPush": true,
+    "draftMr": true,
+    "neverReadyWithoutUser": true
+  },
+  "mr": {
+    "language": "en",
+    "title": "New app: Notes",
+    "bodyFile": "/home/user/fdroid-work/com.example.notes/handoff/mr.md"
+  },
+  "paths": {
+    "workRoot": "/home/user/fdroid-work/com.example.notes",
+    "upstreamDir": "/home/user/fdroid-work/com.example.notes/upstream",
+    "fdroiddataDir": "/home/user/fdroid-work/com.example.notes/fdroiddata",
+    "handoffDir": "/home/user/fdroid-work/com.example.notes/handoff"
+  }
+}
