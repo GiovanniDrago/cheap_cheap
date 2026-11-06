@@ -15,6 +15,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
+// Build with the release key when it is available (local releases and CI), otherwise fall
+// back to the debug key so the project can be built from source without private secrets.
+val hasReleaseSigning = keystorePropertiesFile.exists() &&
+    listOf("keyAlias", "keyPassword", "storePassword", "storeFile").all {
+        !keystoreProperties.getProperty(it).isNullOrBlank()
+    } &&
+    keystoreProperties.getProperty("storeFile")?.let(::file)?.exists() == true
+
 android {
     namespace = "com.takasu.cheapcheap"
     compileSdk = flutter.compileSdkVersion
@@ -51,7 +59,11 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (hasReleaseSigning) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
         debug {
             if (keystorePropertiesFile.exists()) {
