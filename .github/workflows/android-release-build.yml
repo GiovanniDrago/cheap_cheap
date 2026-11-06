@@ -7,6 +7,7 @@ on:
 
 env:
   REPRO_BUILD_DIR: /home/vagrant/build/com.takasu.cheapcheap
+  PUB_CACHE: /home/vagrant/build/com.takasu.cheapcheap/.pub-cache
 
 jobs:
   build-android-publish:
