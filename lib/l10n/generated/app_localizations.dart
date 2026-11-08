@@ -1195,6 +1195,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A confirmation email has been sent. Please check your inbox and confirm your email address, then sign in.'**
   String get confirmationSentMessage;
+
+  /// No description provided for @trophies.
+  ///
+  /// In en, this message translates to:
+  /// **'Trophies'**
+  String get trophies;
+
+  /// No description provided for @trophyTopExpenseCategoryCurrentMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Top category this month'**
+  String get trophyTopExpenseCategoryCurrentMonth;
+
+  /// No description provided for @trophyHighestExpenseCurrentMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest expense this month'**
+  String get trophyHighestExpenseCurrentMonth;
+
+  /// No description provided for @trophyHighestIncomeAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest income'**
+  String get trophyHighestIncomeAllTime;
+
+  /// No description provided for @trophyTopExpenseCategoryAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Top category of all time'**
+  String get trophyTopExpenseCategoryAllTime;
+
+  /// No description provided for @trophyHighestExpenseAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Highest expense of all time'**
+  String get trophyHighestExpenseAllTime;
+
+  /// No description provided for @trophyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No records yet'**
+  String get trophyEmpty;
+
+  /// No description provided for @trophyRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Ranking'**
+  String get trophyRanking;
+
+  /// No description provided for @currentMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Current month'**
+  String get currentMonth;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get allTime;
 }
 
 class _AppLocalizationsDelegate

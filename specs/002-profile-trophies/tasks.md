@@ -24,8 +24,8 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 **Purpose**: Confirm the baseline and add shared localization resources.
 
-- [ ] T001 Verify the baseline by running `flutter pub get`, `flutter analyze`, and `flutter test`; confirm all pass before starting.
-- [ ] T002 [P] Add new keys to `lib/l10n/app_en.arb` and `lib/l10n/app_it.arb` for `trophies`, `trophyTopExpenseCategoryCurrentMonth`, `trophyHighestExpenseCurrentMonth`, `trophyHighestIncomeAllTime`, `trophyTopExpenseCategoryAllTime`, `trophyHighestExpenseAllTime`, `trophyEmpty`, `trophyRanking`, `currentMonth`, and `allTime`.
+- [X] T001 Verify the baseline by running `flutter pub get`, `flutter analyze`, and `flutter test`; confirm all pass before starting.
+- [X] T002 [P] Add new keys to `lib/l10n/app_en.arb` and `lib/l10n/app_it.arb` for `trophies`, `trophyTopExpenseCategoryCurrentMonth`, `trophyHighestExpenseCurrentMonth`, `trophyHighestIncomeAllTime`, `trophyTopExpenseCategoryAllTime`, `trophyHighestExpenseAllTime`, `trophyEmpty`, `trophyRanking`, `currentMonth`, and `allTime`.
 
 ---
 
@@ -35,10 +35,10 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 [P] Add the `ProfileSection` enum and the `profileQuestsExpanded` and `profileStatsExpanded` boolean fields to `lib/models/settings.dart`; both fields default to `true` and must be included in `copyWith`, `toJson`, and `fromJson`, with missing JSON fields falling back to `true`.
-- [ ] T004 [P] Add `TrophyKind` (five values), `TrophyPeriod` (`currentMonth`, `allTime`), `TrophySubjectType` (`category`, `expense`, `income`), `Trophy`, and `TrophyRankingEntry` to `lib/models/trophy.dart`; enforce `value > 0`, exactly one subject identifier, `entries.length <= 3`, and value-desc/date-asc/id-asc ordering.
-- [ ] T005 Add `isProfileSectionExpanded(ProfileSection section)` and `setProfileSectionExpanded(ProfileSection section, bool expanded)` to `lib/state/app_state.dart`, persisting through the existing `_persist()` flow.
-- [ ] T006 Run `flutter gen-l10n` and confirm `lib/l10n/generated/` regenerates without errors.
+- [X] T003 [P] Add the `ProfileSection` enum and the `profileQuestsExpanded` and `profileStatsExpanded` boolean fields to `lib/models/settings.dart`; both fields default to `true` and must be included in `copyWith`, `toJson`, and `fromJson`, with missing JSON fields falling back to `true`.
+- [X] T004 [P] Add `TrophyKind` (five values), `TrophyPeriod` (`currentMonth`, `allTime`), `TrophySubjectType` (`category`, `expense`, `income`), `Trophy`, and `TrophyRankingEntry` to `lib/models/trophy.dart`; enforce `value > 0`, exactly one subject identifier, `entries.length <= 3`, and value-desc/date-asc/id-asc ordering.
+- [X] T005 Add `isProfileSectionExpanded(ProfileSection section)` and `setProfileSectionExpanded(ProfileSection section, bool expanded)` to `lib/state/app_state.dart`, persisting through the existing `_persist()` flow.
+- [X] T006 Run `flutter gen-l10n` and confirm `lib/l10n/generated/` regenerates without errors.
 
 **Checkpoint**: Foundation ready - user stories can now begin.
 
@@ -54,13 +54,13 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation.**
 
-- [ ] T007 [P] [US1] Add widget tests in `test/ui/screens/profile_screen_test.dart` for independent collapse/expand, chevron state, and persistence through `AppState` after a rebuild.
-- [ ] T008 [P] [US1] Add a settings compatibility test in `test/models/settings_test.dart` verifying that JSON without the new fields loads both sections as expanded.
+- [X] T007 [P] [US1] Add widget tests in `test/ui/screens/profile_screen_test.dart` for independent collapse/expand, chevron state, and persistence through `AppState` after a rebuild.
+- [X] T008 [P] [US1] Add a settings compatibility test in `test/models/settings_test.dart` verifying that JSON without the new fields loads both sections as expanded.
 
 ### Implementation for User Story 1
 
-- [ ] T009 [US1] Implement a reusable collapsible section header in `lib/ui/profile_screen.dart` with the section title, a state chevron, a full-row tap target of at least 48x48 logical pixels, and expanded/collapsed accessibility semantics.
-- [ ] T010 [US1] Wire the Quests and Stats sections in `lib/ui/profile_screen.dart` to `Settings.profileQuestsExpanded` and `Settings.profileStatsExpanded` through `AppState`, keeping the quest availability logic, daily-limit overlay, reset countdown, and statistic progress bars unchanged when expanded.
+- [X] T009 [US1] Implement a reusable collapsible section header in `lib/ui/profile_screen.dart` with the section title, a state chevron, a full-row tap target of at least 48x48 logical pixels, and expanded/collapsed accessibility semantics.
+- [X] T010 [US1] Wire the Quests and Stats sections in `lib/ui/profile_screen.dart` to `Settings.profileQuestsExpanded` and `Settings.profileStatsExpanded` through `AppState`, keeping the quest availability logic, daily-limit overlay, reset countdown, and statistic progress bars unchanged when expanded.
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -74,13 +74,13 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 ### Tests for User Story 2
 
-- [ ] T011 [P] [US2] Add unit tests in `test/services/trophy_service_test.dart` covering all five trophies, ties (oldest wins), refunded expenses excluded, installment attribution, uncategorized and unknown categories, future-dated transactions, zero amounts, and empty data.
+- [X] T011 [P] [US2] Add unit tests in `test/services/trophy_service_test.dart` covering all five trophies, ties (oldest wins), refunded expenses excluded, installment attribution, uncategorized and unknown categories, future-dated transactions, zero amounts, and empty data.
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Implement the pure trophy calculator in `lib/services/trophy_service.dart` with period filtering, eligibility rules, category aggregation from `ExpenseAllocation`, unknown/null categories mapped to `no_category`, the value-desc/date-asc/id-asc comparator, and at most three ranking entries.
-- [ ] T013 [US2] Expose computed trophies from `lib/state/app_state.dart` through a `List<Trophy> get trophies` accessor that calls `TrophyService` with the current local date and the in-memory expenses and categories.
-- [ ] T014 [US2] Add the trophies section with the five cards to `lib/ui/profile_screen.dart`, showing localized titles, `formatCurrency` values, subject names (resolving `no_category` to `strings.noCategory`), periods, transaction dates, and a localized empty state for trophies without entries.
+- [X] T012 [P] [US2] Implement the pure trophy calculator in `lib/services/trophy_service.dart` with period filtering, eligibility rules, category aggregation from `ExpenseAllocation`, unknown/null categories mapped to `no_category`, the value-desc/date-asc/id-asc comparator, and at most three ranking entries.
+- [X] T013 [US2] Expose computed trophies from `lib/state/app_state.dart` through a `List<Trophy> get trophies` accessor that calls `TrophyService` with the current local date and the in-memory expenses and categories.
+- [X] T014 [US2] Add the trophies section with the five cards to `lib/ui/profile_screen.dart`, showing localized titles, `formatCurrency` values, subject names (resolving `no_category` to `strings.noCategory`), periods, transaction dates, and a localized empty state for trophies without entries.
 
 **Checkpoint**: User Story 2 is fully functional and independently testable; cards are display-only until User Story 3 wires navigation.
 
@@ -94,13 +94,13 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 ### Tests for User Story 3
 
-- [ ] T015 [P] [US3] Add widget tests in `test/ui/screens/trophy_ranking_screen_test.dart` verifying the three-entry limit, value-desc/date-asc ordering, fewer-than-three behavior, the trophy title, and the back action.
+- [X] T015 [P] [US3] Add widget tests in `test/ui/screens/trophy_ranking_screen_test.dart` verifying the three-entry limit, value-desc/date-asc ordering, fewer-than-three behavior, the trophy title, and the back action.
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Create `lib/ui/trophy_ranking_screen.dart` as a full-screen view with the localized trophy title in the app bar, up to three ranked rows showing position, subject, formatted value, and date, plus an empty guard.
-- [ ] T017 [US3] Add `AppRouter.showTrophyRanking(BuildContext context, {required Trophy trophy})` to `lib/navigation/app_router.dart`, pushing a `MaterialPageRoute` consistent with `showExpenseDetails`.
-- [ ] T018 [US3] Make trophy cards in `lib/ui/profile_screen.dart` tappable when they have at least one ranking entry and open the ranking; keep empty cards non-interactive.
+- [X] T016 [US3] Create `lib/ui/trophy_ranking_screen.dart` as a full-screen view with the localized trophy title in the app bar, up to three ranked rows showing position, subject, formatted value, and date, plus an empty guard.
+- [X] T017 [US3] Add `AppRouter.showTrophyRanking(BuildContext context, {required Trophy trophy})` to `lib/navigation/app_router.dart`, pushing a `MaterialPageRoute` consistent with `showExpenseDetails`.
+- [X] T018 [US3] Make trophy cards in `lib/ui/profile_screen.dart` tappable when they have at least one ranking entry and open the ranking; keep empty cards non-interactive.
 
 **Checkpoint**: All three user stories are independently functional.
 
@@ -110,11 +110,11 @@ Single Flutter application at the repository root: `lib/` and `test/`.
 
 **Purpose**: Quality gates and validation across all stories.
 
-- [ ] T019 [P] Review all new ARB entries in `lib/l10n/app_en.arb` and `lib/l10n/app_it.arb` and confirm no hardcoded user-facing text or currency symbols remain.
-- [ ] T020 [P] Add or complete accessibility semantics for collapsible headers, trophy cards, and ranking rows, and assert them in the existing widget tests.
-- [ ] T021 [P] Verify the trophy calculation is a single pass over expenses with no network calls, no persistence of derived values, and no redundant recalculation on every build; document the result in `specs/002-profile-trophies/quickstart.md` if any deviation is found.
-- [ ] T022 Run `flutter analyze` and `flutter test`; fix all errors and failures.
-- [ ] T023 Run the manual scenarios in `specs/002-profile-trophies/quickstart.md` and record the outcome.
+- [X] T019 [P] Review all new ARB entries in `lib/l10n/app_en.arb` and `lib/l10n/app_it.arb` and confirm no hardcoded user-facing text or currency symbols remain.
+- [X] T020 [P] Add or complete accessibility semantics for collapsible headers, trophy cards, and ranking rows, and assert them in the existing widget tests.
+- [X] T021 [P] Verify the trophy calculation is a single pass over expenses with no network calls, no persistence of derived values, and no redundant recalculation on every build; document the result in `specs/002-profile-trophies/quickstart.md` if any deviation is found.
+- [X] T022 Run `flutter analyze` and `flutter test`; fix all errors and failures.
+- [X] T023 Run the manual scenarios in `specs/002-profile-trophies/quickstart.md` and record the outcome.
 
 ---
 

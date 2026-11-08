@@ -12,9 +12,11 @@ import 'package:cheapcheap/models/recurrence.dart';
 import 'package:cheapcheap/models/reminder.dart';
 import 'package:cheapcheap/models/settings.dart';
 import 'package:cheapcheap/models/stat_key.dart';
+import 'package:cheapcheap/models/trophy.dart';
 import 'package:cheapcheap/services/notification_service.dart';
 import 'package:cheapcheap/services/storage_service.dart';
 import 'package:cheapcheap/services/supabase_service.dart';
+import 'package:cheapcheap/services/trophy_service.dart';
 import 'package:cheapcheap/utils/date_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -187,6 +189,36 @@ class AppState extends ChangeNotifier {
     settings = settings.copyWith(weekStart: start);
     _persist();
     notifyListeners();
+  }
+
+  bool isProfileSectionExpanded(ProfileSection section) {
+    switch (section) {
+      case ProfileSection.quests:
+        return settings.profileQuestsExpanded;
+      case ProfileSection.stats:
+        return settings.profileStatsExpanded;
+    }
+  }
+
+  void setProfileSectionExpanded(ProfileSection section, bool expanded) {
+    switch (section) {
+      case ProfileSection.quests:
+        settings = settings.copyWith(profileQuestsExpanded: expanded);
+        break;
+      case ProfileSection.stats:
+        settings = settings.copyWith(profileStatsExpanded: expanded);
+        break;
+    }
+    _persist();
+    notifyListeners();
+  }
+
+  List<Trophy> get trophies {
+    return TrophyService.calculate(
+      expenses: expenses,
+      categories: categories,
+      referenceDate: DateTime.now(),
+    );
   }
 
   void markWelcomeSeen() {

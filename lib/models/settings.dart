@@ -10,6 +10,8 @@ class Settings {
     this.budgetSortAscending = false,
     this.dateFormat = 'dd/MM/yyyy',
     this.weekStart = 'monday',
+    this.profileQuestsExpanded = true,
+    this.profileStatsExpanded = true,
     List<Reminder>? reminders,
   }) : reminders = reminders ?? [];
 
@@ -21,6 +23,8 @@ class Settings {
   final bool budgetSortAscending;
   final String dateFormat;
   final String weekStart;
+  final bool profileQuestsExpanded;
+  final bool profileStatsExpanded;
   final List<Reminder> reminders;
 
   Settings copyWith({
@@ -32,6 +36,8 @@ class Settings {
     bool? budgetSortAscending,
     String? dateFormat,
     String? weekStart,
+    bool? profileQuestsExpanded,
+    bool? profileStatsExpanded,
     List<Reminder>? reminders,
   }) {
     return Settings(
@@ -43,6 +49,8 @@ class Settings {
       budgetSortAscending: budgetSortAscending ?? this.budgetSortAscending,
       dateFormat: dateFormat ?? this.dateFormat,
       weekStart: weekStart ?? this.weekStart,
+      profileQuestsExpanded: profileQuestsExpanded ?? this.profileQuestsExpanded,
+      profileStatsExpanded: profileStatsExpanded ?? this.profileStatsExpanded,
       reminders: reminders ?? this.reminders,
     );
   }
@@ -57,6 +65,8 @@ class Settings {
       'budgetSortAscending': budgetSortAscending,
       'dateFormat': dateFormat,
       'weekStart': weekStart,
+      'profileQuestsExpanded': profileQuestsExpanded,
+      'profileStatsExpanded': profileStatsExpanded,
       'reminders': reminders.map((reminder) => reminder.toJson()).toList(),
     };
   }
@@ -71,9 +81,13 @@ class Settings {
       budgetSortAscending: json['budgetSortAscending'] as bool? ?? false,
       dateFormat: json['dateFormat'] as String? ?? 'dd/MM/yyyy',
       weekStart: json['weekStart'] as String? ?? 'monday',
+      profileQuestsExpanded: json['profileQuestsExpanded'] as bool? ?? true,
+      profileStatsExpanded: json['profileStatsExpanded'] as bool? ?? true,
       reminders: (json['reminders'] as List<dynamic>? ?? [])
           .map((item) => Reminder.fromJson(Map<String, dynamic>.from(item)))
           .toList(),
     );
   }
 }
+
+enum ProfileSection { quests, stats }
