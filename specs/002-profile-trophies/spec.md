@@ -15,7 +15,8 @@
 - Q: Who are the trophies for? → A: Personal records of the single local profile, to give an overview of the user's own habits. No comparison between users or profiles.
 - Q: How is "highest refund" defined? → A: The refund trophy was removed from scope by the user.
 - Q: How are ties handled? → A: Only the oldest element wins a tie. In rankings, elements with equal values are ordered by date, oldest first.
-- Q: What does tapping a category open? → A: A ranking that shows the top three elements; ties are ordered by date.
+- Q: When a category trophy card is tapped, which elements does the top-three ranking contain? → A: The top three expense categories by total amount; transaction trophies rank the top three transactions by amount. Every trophy card opens the ranking of the elements it ranks.
+- Q: How should the top-three ranking appear? → A: In a dedicated full-screen view with the trophy title and a back action.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -55,7 +56,7 @@ A user opens the profile and sees a trophy section that summarizes their most no
 
 ### User Story 3 - Open trophy rankings (Priority: P3)
 
-A user taps a trophy card to see more than the single winner. A ranking opens with the top three elements for that trophy, ordered by value; when values are equal, the oldest element comes first.
+A user taps a trophy card to see more than the single winner. A dedicated full-screen ranking opens with the trophy title and the top three elements for that trophy, ordered by value; when values are equal, the oldest element comes first.
 
 **Why this priority**: The ranking adds depth to the trophy cards without changing the main profile overview, and it depends on the trophy calculations from User Story 2.
 
@@ -63,7 +64,7 @@ A user taps a trophy card to see more than the single winner. A ranking opens wi
 
 **Acceptance Scenarios**:
 
-1. **Given** at least three qualifying elements exist, **When** the user taps a trophy card, **Then** a ranking shows exactly three elements in descending order of value.
+1. **Given** at least three qualifying elements exist, **When** the user taps a trophy card, **Then** a dedicated full-screen ranking opens and shows exactly three elements in descending order of value.
 2. **Given** two or more elements have the same value, **When** the ranking is shown, **Then** the older element appears first.
 3. **Given** fewer than three qualifying elements exist, **When** the user taps the trophy card, **Then** the ranking shows all available elements.
 4. **Given** a trophy card has no qualifying data, **When** the user taps it, **Then** no ranking opens and the card remains non-interactive.
@@ -122,7 +123,7 @@ A user taps a trophy card to see more than the single winner. A ranking opens wi
 - **FR-025**: Elements with equal values MUST be ordered by date, oldest first, so the ranking is deterministic.
 - **FR-026**: Category trophies MUST rank expense categories by total amount; transaction trophies MUST rank the underlying transactions by amount.
 - **FR-027**: A ranking MUST show all available elements when fewer than three qualify.
-- **FR-028**: A ranking MUST be closable and MUST return the user to the profile without changing the trophy state.
+- **FR-028**: A ranking MUST open in a dedicated full-screen view that shows the trophy title and a back action, and MUST return the user to the profile without changing the trophy state.
 
 **Presentation and localization**
 
