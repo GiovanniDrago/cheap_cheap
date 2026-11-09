@@ -1,4 +1,5 @@
 installed:
+- flutter-github-release
 - git
 - github
 settings:

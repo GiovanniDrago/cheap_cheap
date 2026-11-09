@@ -566,4 +566,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get confirmationSentMessage =>
       'A confirmation email has been sent. Please check your inbox and confirm your email address, then sign in.';
+
+  @override
+  String get trophies => 'Trophies';
+
+  @override
+  String get trophyTopExpenseCategoryCurrentMonth => 'Top category this month';
+
+  @override
+  String get trophyHighestExpenseCurrentMonth => 'Highest expense this month';
+
+  @override
+  String get trophyHighestIncomeAllTime => 'Highest income';
+
+  @override
+  String get trophyTopExpenseCategoryAllTime => 'Top category of all time';
+
+  @override
+  String get trophyHighestExpenseAllTime => 'Highest expense of all time';
+
+  @override
+  String get trophyEmpty => 'No records yet';
+
+  @override
+  String get trophyRanking => 'Ranking';
+
+  @override
+  String get currentMonth => 'Current month';
+
+  @override
+  String get allTime => 'All time';
 }

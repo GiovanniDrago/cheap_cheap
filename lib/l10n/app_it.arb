@@ -181,5 +181,15 @@
   "accountNotConfigured": "Non configurato",
   "syncing": "Sincronizzazione...",
   "confirmationSentTitle": "Conferma la tua email",
-  "confirmationSentMessage": "Una email di conferma è stata inviata. Controlla la tua casella di posta e conferma il tuo indirizzo email, poi accedi."
+  "confirmationSentMessage": "Una email di conferma è stata inviata. Controlla la tua casella di posta e conferma il tuo indirizzo email, poi accedi.",
+  "trophies": "Trofei",
+  "trophyTopExpenseCategoryCurrentMonth": "Categoria top del mese",
+  "trophyHighestExpenseCurrentMonth": "Spesa più alta del mese",
+  "trophyHighestIncomeAllTime": "Entrata più alta",
+  "trophyTopExpenseCategoryAllTime": "Categoria top di sempre",
+  "trophyHighestExpenseAllTime": "Spesa più alta di sempre",
+  "trophyEmpty": "Nessun record",
+  "trophyRanking": "Classifica",
+  "currentMonth": "Mese corrente",
+  "allTime": "Tutti i mesi"
 }

@@ -1,0 +1,37 @@
+schema_version: "1.0"
+
+extension:
+  id: flutter-github-release
+  name: "Flutter GitHub Release"
+  version: "1.0.0"
+  description: "Compute the next Flutter version tag, confirm it with the user, and run the existing tag-driven GitHub release flow"
+  author: Giovanni Drago
+  repository: https://github.com/GiovanniDrago/opencode-skills
+  license: GPL-3.0
+
+requires:
+  speckit_version: ">=0.8.5"
+  tools:
+    - name: git
+      required: false
+    - name: gh
+      required: false
+    - name: flutter
+      required: false
+
+provides:
+  commands:
+    - name: speckit.flutter-github-release.publish
+      file: commands/speckit.flutter-github-release.publish.md
+      description: "Compute the next Flutter release tag, ask for confirmation, and publish through scripts/tag-release.sh"
+  scripts:
+    - name: flutter-github-release-plan
+      file: scripts/plan-release.sh
+      description: "Validate the Flutter release setup and compute the next version tag"
+      runtimes:
+        - bash
+    - name: flutter-github-release-validate-tag
+      file: scripts/validate-tag.sh
+      description: "Validate a user-supplied release tag before publishing"
+      runtimes:
+        - bash

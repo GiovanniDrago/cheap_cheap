@@ -3,8 +3,13 @@ import 'dart:io';
 
 import 'package:cheapcheap/l10n/generated/app_localizations.dart';
 import 'package:cheapcheap/models/quest.dart';
+import 'package:cheapcheap/models/settings.dart';
 import 'package:cheapcheap/models/stat_key.dart';
+import 'package:cheapcheap/models/trophy.dart';
+import 'package:cheapcheap/navigation/app_router.dart';
 import 'package:cheapcheap/state/app_state.dart';
+import 'package:cheapcheap/ui/trophy_labels.dart';
+import 'package:cheapcheap/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -84,6 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     final questLimitReached = state.isQuestLimitReached();
     final nextQuestIn = state.timeToNextQuestReset();
+    final trophies = state.trophies;
     if (_nameController.text != profile.name) {
       _nameController.text = profile.name;
     }
@@ -150,56 +156,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(strings.quests, style: Theme.of(context).textTheme.titleLarge),
+          Text(strings.trophies, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          Stack(
-            children: [
-              Column(
-                children: quests
-                    .map(
-                      (quest) => _QuestTile(
-                        quest: quest,
-                        isAvailable:
-                            hasName &&
-                            state.canCompleteQuest(quest) &&
-                            !questLimitReached,
-                        isCompleted: hasName && !state.canCompleteQuest(quest),
+          ...trophies.map(
+            (trophy) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _TrophyCard(
+                trophy: trophy,
+                title: trophyTitle(strings, trophy.kind),
+                subject: trophySubject(
+                  trophy,
+                  state.categories,
+                  state.expenses,
+                  strings,
+                ),
+                periodLabel: trophyPeriodLabel(strings, trophy.period),
+                dateLabel: trophy.date == null
+                    ? ''
+                    : formatDateField(
+                        trophy.date!,
+                        state.locale.toString(),
+                        dateFormat: state.settings.dateFormat,
                       ),
-                    )
-                    .toList(),
-              ),
-              if (questLimitReached)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      '${strings.nextQuestsIn} ${_formatDuration(nextQuestIn)}',
-                      style: Theme.of(
+                valueLabel: trophy.hasData
+                    ? formatCurrency(
+                        trophy.value,
+                        state.settings.currency,
+                        state.locale.toString(),
+                      )
+                    : '',
+                emptyLabel: strings.trophyEmpty,
+                onTap: trophy.hasData
+                    ? () => AppRouter.showTrophyRanking(
                         context,
-                      ).textTheme.titleMedium?.copyWith(color: Colors.white),
-                      textAlign: TextAlign.center,
+                        trophy: trophy,
+                      )
+                    : null,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _CollapsibleSection(
+            title: strings.quests,
+            expanded: state.isProfileSectionExpanded(ProfileSection.quests),
+            onToggle: () => state.setProfileSectionExpanded(
+              ProfileSection.quests,
+              !state.isProfileSectionExpanded(ProfileSection.quests),
+            ),
+            child: Stack(
+              children: [
+                Column(
+                  children: quests
+                      .map(
+                        (quest) => _QuestTile(
+                          quest: quest,
+                          isAvailable:
+                              hasName &&
+                              state.canCompleteQuest(quest) &&
+                              !questLimitReached,
+                          isCompleted: hasName && !state.canCompleteQuest(quest),
+                        ),
+                      )
+                      .toList(),
+                ),
+                if (questLimitReached)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.65),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '${strings.nextQuestsIn} ${_formatDuration(nextQuestIn)}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 20),
-          Text(strings.stats, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          ...StatKey.values.map((key) {
-            final value = profile.stats[key] ?? 0;
-            return ListTile(
-              title: Text(_statLabel(strings, key)),
-              subtitle: LinearProgressIndicator(
-                value: ((value + 20) / 40).clamp(0, 1),
-              ),
-              trailing: Text(value.toStringAsFixed(1)),
-            );
-          }),
+          _CollapsibleSection(
+            title: strings.stats,
+            expanded: state.isProfileSectionExpanded(ProfileSection.stats),
+            onToggle: () => state.setProfileSectionExpanded(
+              ProfileSection.stats,
+              !state.isProfileSectionExpanded(ProfileSection.stats),
+            ),
+            child: Column(
+              children: StatKey.values.map((key) {
+                final value = profile.stats[key] ?? 0;
+                return ListTile(
+                  title: Text(_statLabel(strings, key)),
+                  subtitle: LinearProgressIndicator(
+                    value: ((value + 20) / 40).clamp(0, 1),
+                  ),
+                  trailing: Text(value.toStringAsFixed(1)),
+                );
+              }).toList(),
+            ),
+          ),
         ],
       ),
     );
@@ -209,6 +269,144 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  }
+}
+
+class _CollapsibleSection extends StatelessWidget {
+  const _CollapsibleSection({
+    required this.title,
+    required this.expanded,
+    required this.onToggle,
+    required this.child,
+  });
+
+  final String title;
+  final bool expanded;
+  final VoidCallback onToggle;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          button: true,
+          expanded: expanded,
+          child: InkWell(
+            onTap: onToggle,
+            borderRadius: BorderRadius.circular(12),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  Icon(expanded ? Icons.expand_less : Icons.expand_more),
+                ],
+              ),
+            ),
+          ),
+        ),
+        if (expanded) ...[
+          const SizedBox(height: 8),
+          child,
+        ],
+      ],
+    );
+  }
+}
+
+class _TrophyCard extends StatelessWidget {
+  const _TrophyCard({
+    required this.trophy,
+    required this.title,
+    required this.subject,
+    required this.periodLabel,
+    required this.dateLabel,
+    required this.valueLabel,
+    required this.emptyLabel,
+    required this.onTap,
+  });
+
+  final Trophy trophy;
+  final String title;
+  final String subject;
+  final String periodLabel;
+  final String dateLabel;
+  final String valueLabel;
+  final String emptyLabel;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasData = trophy.hasData;
+    return Semantics(
+      button: hasData,
+      label: hasData ? '$title $valueLabel $subject' : '$title $emptyLabel',
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.emoji_events_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      if (hasData) ...[
+                        Text(
+                          valueLabel,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subject,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          dateLabel.isEmpty
+                              ? periodLabel
+                              : '$periodLabel · $dateLabel',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ] else
+                        Text(
+                          emptyLabel,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                    ],
+                  ),
+                ),
+                if (hasData) const Icon(Icons.chevron_right),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

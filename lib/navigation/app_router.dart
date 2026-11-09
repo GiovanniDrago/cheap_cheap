@@ -1,12 +1,14 @@
 import 'package:cheapcheap/models/budget.dart';
 import 'package:cheapcheap/models/category.dart';
 import 'package:cheapcheap/models/expense.dart';
+import 'package:cheapcheap/models/trophy.dart';
 import 'package:cheapcheap/ui/budget_stats_screen.dart';
 import 'package:cheapcheap/ui/category_form_screen.dart';
 import 'package:cheapcheap/ui/current_stats_screen.dart';
 import 'package:cheapcheap/ui/expense_detail_screen.dart';
 import 'package:cheapcheap/ui/expense_form_screen.dart';
 import 'package:cheapcheap/ui/monthly_stats_screen.dart';
+import 'package:cheapcheap/ui/trophy_ranking_screen.dart';
 import 'package:flutter/material.dart';
 
 final class AppRoutes {
@@ -80,6 +82,15 @@ final class AppRouter {
           initialSplitExpanded: initialSplitExpanded,
         ),
       ),
+    );
+  }
+
+  static Future<void> showTrophyRanking(
+    BuildContext context, {
+    required Trophy trophy,
+  }) {
+    return Navigator.of(context).push(
+      _materialRoute(builder: (_) => TrophyRankingScreen(trophy: trophy)),
     );
   }
 

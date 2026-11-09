@@ -567,4 +567,34 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get confirmationSentMessage =>
       'Una email di conferma è stata inviata. Controlla la tua casella di posta e conferma il tuo indirizzo email, poi accedi.';
+
+  @override
+  String get trophies => 'Trofei';
+
+  @override
+  String get trophyTopExpenseCategoryCurrentMonth => 'Categoria top del mese';
+
+  @override
+  String get trophyHighestExpenseCurrentMonth => 'Spesa più alta del mese';
+
+  @override
+  String get trophyHighestIncomeAllTime => 'Entrata più alta';
+
+  @override
+  String get trophyTopExpenseCategoryAllTime => 'Categoria top di sempre';
+
+  @override
+  String get trophyHighestExpenseAllTime => 'Spesa più alta di sempre';
+
+  @override
+  String get trophyEmpty => 'Nessun record';
+
+  @override
+  String get trophyRanking => 'Classifica';
+
+  @override
+  String get currentMonth => 'Mese corrente';
+
+  @override
+  String get allTime => 'Tutti i mesi';
 }
