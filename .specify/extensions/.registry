@@ -32,6 +32,20 @@
       },
       "registered_skills": [],
       "installed_at": "2026-10-31T00:13:37.222077+00:00"
+    },
+    "flutter-github-release": {
+      "version": "1.0.0",
+      "source": "local",
+      "manifest_hash": "sha256:59997608fb803d8079dd9189690221d593a02e92967f4badcef27d0f669e99bc",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "opencode": [
+          "speckit.flutter-github-release.publish"
+        ]
+      },
+      "registered_skills": [],
+      "installed_at": "2026-11-09T21:49:18.968507+00:00"
     }
   }
 }
